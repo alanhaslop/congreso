@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AGF Messenchymal — Ventas Congreso</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --green:#1D9E75;--green-dark:#0F6E56;--green-light:#E1F5EE;
+    --bg:#f5f5f3;--surface:#fff;--border:#e0e0da;--border-focus:#1D9E75;
+    --text:#1a1a1a;--text-muted:#666;--text-hint:#999;
+    --radius:10px;--radius-sm:7px;
+  }
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+  /* ── LOGIN ── */
+  #login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:1rem}
+  .login-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;width:100%;max-width:340px;text-align:center}
+  .login-logo{width:52px;height:52px;border-radius:var(--radius-sm);background:var(--green);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;line-height:1.3;margin:0 auto 1.25rem}
+  .login-card h1{font-size:17px;font-weight:600;margin-bottom:4px}
+  .login-card p{font-size:13px;color:var(--text-muted);margin-bottom:1.5rem}
+  .login-card input{width:100%;border:1px solid var(--border);border-radius:var(--radius-sm);padding:11px 14px;font-size:15px;outline:none;margin-bottom:10px;letter-spacing:.15em;text-align:center}
+  .login-card input:focus{border-color:var(--border-focus);box-shadow:0 0 0 3px rgba(29,158,117,.12)}
+  .login-card button{width:100%;padding:12px;background:var(--green);color:#fff;border:none;border-radius:var(--radius-sm);font-size:15px;font-weight:600;cursor:pointer}
+  .login-card button:hover{background:var(--green-dark)}
+  .login-err{font-size:13px;color:#c0392b;margin-top:8px;min-height:18px}
+
+  /* ── APP ── */
+  #app-screen{display:none;max-width:720px;margin:0 auto;padding:1.25rem 1rem 3rem}
+  .header{display:flex;align-items:center;gap:12px;margin-bottom:1.5rem}
+  .logo{width:46px;height:46px;border-radius:var(--radius-sm);background:var(--green);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;line-height:1.3;text-align:center;flex-shrink:0}
+  .header h1{font-size:18px;font-weight:600}
+  .header p{font-size:13px;color:var(--text-muted)}
+
+  .config-bar{background:#fffbe6;border:1px solid #f0c040;border-radius:var(--radius-sm);padding:.75rem 1rem;margin-bottom:1rem;font-size:13px;color:#7a5c00}
+  .config-bar input{width:100%;border:1px solid #f0c040;border-radius:var(--radius-sm);padding:7px 10px;font-size:13px;margin-top:6px;outline:none;background:#fff}
+  .config-bar input:focus{border-color:var(--green)}
+  .config-bar.ok{background:#E1F5EE;border-color:var(--green);color:var(--green-dark)}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.1rem 1.25rem;margin-bottom:1rem}
+  .card-title{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.875rem}
+  .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .field{display:flex;flex-direction:column;gap:5px}
+  .field label{font-size:12px;color:var(--text-muted);font-weight:500}
+  .field input{border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 12px;font-size:15px;color:var(--text);outline:none;background:#fafaf9}
+  .field input:focus{border-color:var(--border-focus);box-shadow:0 0 0 3px rgba(29,158,117,.1);background:#fff}
+  .span2{grid-column:span 2}
+
+  .pgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .pcard{border:1px solid var(--border);border-radius:var(--radius-sm);padding:.875rem;background:#fafaf9;transition:border-color .15s}
+  .pcard.sel{border:2px solid var(--green);background:var(--green-light)}
+  .phead{display:flex;justify-content:space-between;align-items:center;margin-bottom:.625rem}
+  .pname{font-size:15px;font-weight:600}
+  .qc{display:flex;align-items:center;gap:7px}
+  .qbtn{width:28px;height:28px;border-radius:50%;border:1px solid var(--border);background:var(--surface);font-size:17px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text);user-select:none;flex-shrink:0;line-height:1}
+  .qbtn:hover{background:var(--green-light);border-color:var(--green)}
+  .qnum{font-size:16px;font-weight:600;min-width:22px;text-align:center}
+  .ttog{display:flex;gap:5px}
+  .tbtn{flex:1;padding:6px 0;font-size:12px;font-weight:500;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;background:transparent;color:var(--text-muted);transition:all .12s}
+  .tbtn.on{background:var(--green);border-color:var(--green);color:#fff}
+  .psub{font-size:11px;color:var(--text-muted);margin-top:.375rem;min-height:15px}
+
+  .total-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center}
+  .total-bar .lbl{font-size:13px;color:var(--text-muted)}
+  .total-bar .lbl small{display:block;font-size:11px;margin-top:2px}
+  .total-amt{font-size:30px;font-weight:700;color:var(--green-dark)}
+
+  .btn-confirmar{width:100%;padding:15px;background:var(--green);color:#fff;border:none;border-radius:var(--radius);font-size:16px;font-weight:600;cursor:pointer;transition:background .15s;margin-bottom:6px}
+  .btn-confirmar:hover{background:var(--green-dark)}
+  .btn-confirmar:disabled{background:#ccc;cursor:not-allowed}
+  .vnum-badge{text-align:center;font-size:12px;color:var(--text-hint)}
+
+  /* ── MODAL ── */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;align-items:center;justify-content:center;padding:1rem}
+  .modal-overlay.show{display:flex}
+  .modal{background:var(--surface);border-radius:var(--radius);width:100%;max-width:460px;overflow:hidden}
+  .mhead{padding:1.1rem 1.25rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+  .mhead h2{font-size:16px;font-weight:600}
+  .mhead .vbadge{font-size:12px;color:var(--text-muted)}
+  .mbody{padding:1.25rem}
+  .srow{display:flex;align-items:flex-start;gap:12px;padding:.875rem 1rem;border-radius:var(--radius-sm);border:1px solid var(--border);background:#fafaf9;margin-bottom:10px;transition:all .2s}
+  .srow.ok{border-color:var(--green);background:var(--green-light)}
+  .srow.err{border-color:#e74c3c;background:#fdf0f0}
+  .srow.loading{border-color:#e0e0da}
+  .sdot{width:11px;height:11px;border-radius:50%;flex-shrink:0;margin-top:3px}
+  .sdot-ok{background:var(--green)}
+  .sdot-err{background:#e74c3c}
+  .sdot-spin{background:#ccc;animation:pulse 1s infinite}
+  @keyframes pulse{0%,100%{transform:scale(.6)}50%{transform:scale(1)}}
+  .stitle{font-size:14px;font-weight:600;margin-bottom:2px}
+  .ssub{font-size:12px;color:var(--text-muted)}
+  .print-btn{width:100%;padding:11px;background:#fff;border:1px solid var(--green);color:var(--green);border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;margin-top:.25rem}
+  .print-btn:hover{background:var(--green-light)}
+  .mfooter{padding:.875rem 1.25rem;border-top:1px solid var(--border);display:flex;gap:8px}
+  .mfooter button{flex:1;padding:11px;border-radius:var(--radius-sm);font-size:14px;cursor:pointer;border:1px solid var(--border);background:#fff;color:var(--text);font-weight:500}
+  .mfooter button.pri{background:var(--green);color:#fff;border-color:var(--green);font-weight:600}
+  .mfooter button.pri:hover{background:var(--green-dark)}
+
+  /* ── RECIBO IMPRESIÓN ── */
+  @media print{
+    body>*{display:none!important}
+    #recibo-print{display:block!important;padding:28px;font-family:Arial,sans-serif;font-size:13px;color:#000}
+  }
+  #recibo-print{display:none}
+  #recibo-print .rb{font-size:20px;font-weight:700;color:#0F6E56;margin-bottom:2px}
+  #recibo-print .rs{font-size:11px;color:#666;margin-bottom:1.5rem}
+  #recibo-print .rt{font-size:15px;font-weight:700;border-bottom:2px solid #1D9E75;padding-bottom:6px;margin-bottom:1rem}
+  #recibo-print table{width:100%;border-collapse:collapse}
+  #recibo-print td{padding:5px 3px;vertical-align:top;font-size:13px}
+  #recibo-print td:last-child{text-align:right}
+  #recibo-print .sh{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.06em;border-top:1px solid #ddd;padding-top:10px;padding-bottom:3px}
+  #recibo-print .tr-tot td{font-weight:700;font-size:15px;border-top:2px solid #1D9E75;padding-top:8px;color:#0F6E56}
+  #recibo-print .firmas{display:flex;gap:2rem;margin-top:2.5rem}
+  #recibo-print .firma-box{flex:1;border-top:1px solid #000;padding-top:6px;font-size:11px;color:#666}
+  #recibo-print .pie{font-size:10px;color:#999;text-align:center;margin-top:1.5rem}
+
+  @media(max-width:500px){
+    .g2,.pgrid{grid-template-columns:1fr}
+    .span2{grid-column:span 1}
+    .total-amt{font-size:24px}
+  }
+</style>
+</head>
+<body>
+
+<div id="recibo-print"></div>
+
+<!-- ── LOGIN ── -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">AGF<br>MSC</div>
+    <h1>Ventas Congreso</h1>
+    <p>AGF Messenchymal Argentina<br>Acceso restringido al equipo</p>
+    <input type="password" id="pwd-input" placeholder="Contraseña" onkeydown="if(event.key==='Enter')login()">
+    <button onclick="login()">Ingresar</button>
+    <div class="login-err" id="login-err"></div>
+  </div>
+</div>
+
+<!-- ── APP ── -->
+<div id="app-screen">
+
+  <div class="header">
+    <div class="logo">AGF<br>MSC</div>
+    <div>
+      <h1>AGF Messenchymal</h1>
+      <p id="vnlbl">Ventas congreso · Venta #1</p>
+    </div>
+  </div>
+
+  <div class="config-bar" id="cfg-bar">
+    <strong>Configuración:</strong> pegá la URL de tu Google Apps Script para activar el guardado automático.
+    <input id="script-url" placeholder="https://script.google.com/macros/s/XXXX/exec" oninput="guardarURL()">
+  </div>
+
+  <div class="card">
+    <div class="card-title">Datos del cliente</div>
+    <div class="g2">
+      <div class="field"><label>Nombre</label><input id="nombre" placeholder="Ana" autocomplete="off"></div>
+      <div class="field"><label>Apellido</label><input id="apellido" placeholder="García" autocomplete="off"></div>
+      <div class="field"><label>CUIT / CUIL</label><input id="cuit" placeholder="20-12345678-0" maxlength="13" autocomplete="off"></div>
+      <div class="field"><label>Teléfono</label><input id="tel" placeholder="+54 11..." autocomplete="off"></div>
+      <div class="field span2"><label>Email</label><input id="mail" type="email" placeholder="ana@mail.com" autocomplete="off"></div>
+      <div class="field span2"><label>Localidad</label><input id="localidad" placeholder="Ciudad, Provincia" autocomplete="off"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Productos</div>
+    <div class="pgrid" id="pgrid"></div>
+  </div>
+
+  <div class="total-bar">
+    <div class="lbl">Total estimado<small>en dólares (USD)</small></div>
+    <div class="total-amt" id="total-display">u$0</div>
+  </div>
+
+  <button class="btn-confirmar" id="btn-confirmar" onclick="confirmar()">Confirmar venta</button>
+  <div class="vnum-badge" id="vnum-badge">Venta #1</div>
+
+</div><!-- /app-screen -->
+
+<!-- ── MODAL ── -->
+<div class="modal-overlay" id="overlay">
+  <div class="modal">
+    <div class="mhead">
+      <h2 id="modal-title">Procesando...</h2>
+      <span class="vbadge" id="modal-vnum"></span>
+    </div>
+    <div class="mbody">
+      <div class="srow loading" id="row-sheet">
+        <div class="sdot sdot-spin" id="dot-sheet"></div>
+        <div>
+          <div class="stitle">Guardando en Google Sheets</div>
+          <div class="ssub" id="sub-sheet">Enviando datos...</div>
+        </div>
+      </div>
+      <div class="srow loading" id="row-mail">
+        <div class="sdot sdot-spin" id="dot-mail"></div>
+        <div>
+          <div class="stitle">Enviando mail al cliente</div>
+          <div class="ssub" id="sub-mail">Conectando con el servidor...</div>
+        </div>
+      </div>
+      <button class="print-btn" onclick="imprimirRecibo()">Imprimir recibo para la administrativa</button>
+    </div>
+    <div class="mfooter">
+      <button onclick="cerrar()">Volver</button>
+      <button class="pri" onclick="nuevaVenta()">Nueva venta</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CONTRASEÑA ── cambiar antes del congreso ─────────────────
+const PASSWORD = "agf2025";
+// ─────────────────────────────────────────────────────────────
+
+const P_SIMPLE=750, P_COMBO=800;
+const PRODS=["Dermal","Capillary","Pink","Biomask"];
+let vNum=1, estado={};
+PRODS.forEach(p=>{ estado[p]={qty:0,tipo:"simple"} });
+
+// Login
+function login(){
+  const v=document.getElementById("pwd-input").value;
+  if(v===PASSWORD){
+    sessionStorage.setItem("agf_auth","1");
+    document.getElementById("login-screen").style.display="none";
+    document.getElementById("app-screen").style.display="block";
+    initConfig();
+  } else {
+    document.getElementById("login-err").textContent="Contraseña incorrecta.";
+    document.getElementById("pwd-input").value="";
+  }
+}
+window.addEventListener("load",()=>{
+  if(sessionStorage.getItem("agf_auth")==="1"){
+    document.getElementById("login-screen").style.display="none";
+    document.getElementById("app-screen").style.display="block";
+    initConfig();
+  }
+  renderProds();
+});
+
+// Config Apps Script URL
+function initConfig(){
+  const saved=localStorage.getItem("agf_script_url");
+  if(saved){ document.getElementById("script-url").value=saved; markCfgOk(); }
+}
+function guardarURL(){
+  const v=document.getElementById("script-url").value.trim();
+  if(v.startsWith("https://script.google.com")){ localStorage.setItem("agf_script_url",v); markCfgOk(); }
+}
+function markCfgOk(){ document.getElementById("cfg-bar").className="config-bar ok"; }
+function getScriptURL(){ return document.getElementById("script-url").value.trim()||localStorage.getItem("agf_script_url")||""; }
+
+// Productos
+function renderProds(){
+  const g=document.getElementById("pgrid"); g.innerHTML="";
+  PRODS.forEach(nombre=>{
+    const s=estado[nombre];
+    const pr=s.tipo==="simple"?P_SIMPLE:P_COMBO;
+    const sub=s.qty>0?`u$${pr} × ${s.qty} = u$${(pr*s.qty).toLocaleString("es-AR")}`:"";
+    const c=document.createElement("div");
+    c.className="pcard"+(s.qty>0?" sel":"");
+    c.innerHTML=`
+      <div class="phead">
+        <div class="pname">${nombre}</div>
+        <div class="qc">
+          <div class="qbtn" onclick="cq('${nombre}',-1)">−</div>
+          <div class="qnum">${s.qty}</div>
+          <div class="qbtn" onclick="cq('${nombre}',1)">+</div>
+        </div>
+      </div>
+      <div class="ttog">
+        <button class="tbtn${s.tipo==="simple"?" on":""}" onclick="ct('${nombre}','simple')">Simple u$${P_SIMPLE}</button>
+        <button class="tbtn${s.tipo==="combo"?" on":""}" onclick="ct('${nombre}','combo')">Combinada u$${P_COMBO}</button>
+      </div>
+      <div class="psub">${sub}</div>`;
+    g.appendChild(c);
+  });
+  updTotal();
+}
+function cq(n,d){ estado[n].qty=Math.max(0,estado[n].qty+d); renderProds(); }
+function ct(n,t){ estado[n].tipo=t; renderProds(); }
+function updTotal(){
+  let t=0; PRODS.forEach(p=>{ const s=estado[p]; t+=s.qty*(s.tipo==="simple"?P_SIMPLE:P_COMBO); });
+  document.getElementById("total-display").textContent="u$"+t.toLocaleString("es-AR");
+}
+
+function getCliente(){
+  return{
+    nombre:document.getElementById("nombre").value.trim(),
+    apellido:document.getElementById("apellido").value.trim(),
+    cuit:document.getElementById("cuit").value.trim(),
+    mail:document.getElementById("mail").value.trim(),
+    tel:document.getElementById("tel").value.trim(),
+    localidad:document.getElementById("localidad").value.trim()
+  };
+}
+function buildLineas(){
+  let lineas=[],total=0;
+  PRODS.forEach(p=>{ const s=estado[p]; if(s.qty>0){ const pr=s.tipo==="simple"?P_SIMPLE:P_COMBO; lineas.push({prod:p,tipo:s.tipo,qty:s.qty,precio:pr,sub:pr*s.qty}); total+=pr*s.qty; } });
+  return{lineas,total};
+}
+
+// Confirmar venta
+async function confirmar(){
+  const c=getCliente();
+  if(!c.nombre||!c.apellido||!c.cuit){ alert("Completá nombre, apellido y CUIT."); return; }
+  if(!PRODS.some(p=>estado[p].qty>0)){ alert("Seleccioná al menos un producto."); return; }
+  const url=getScriptURL();
+  if(!url){ alert("Pegá la URL del Apps Script en el campo de configuración."); return; }
+
+  document.getElementById("modal-title").textContent="Procesando venta...";
+  document.getElementById("modal-vnum").textContent="Venta #"+vNum;
+  setRow("sheet","loading","Enviando datos...");
+  setRow("mail","loading","Conectando con el servidor...");
+  document.getElementById("overlay").className="modal-overlay show";
+  document.getElementById("btn-confirmar").disabled=true;
+
+  const{lineas,total}=buildLineas();
+  const payload={ventaNum:vNum,fecha:new Date().toLocaleString("es-AR"),cliente:c,lineas,total};
+
+  try{
+    const res=await fetch(url,{method:"POST",body:JSON.stringify(payload)});
+    const data=await res.json();
+    setRow("sheet", data.sheet==="ok"?"ok":"err", data.sheet==="ok"?"Guardado correctamente":"Error: "+(data.sheetError||"desconocido"));
+    setRow("mail",  data.mail==="ok" ?"ok":"err", data.mail==="ok" ?"Mail enviado a "+c.mail:"Error: "+(data.mailError||"desconocido"));
+    document.getElementById("modal-title").textContent= (data.sheet==="ok"&&data.mail==="ok") ? "Venta #"+vNum+" registrada" : "Venta #"+vNum+" — revisar errores";
+  }catch(err){
+    setRow("sheet","err","Sin conexión con el servidor");
+    setRow("mail","err","Sin conexión con el servidor");
+    document.getElementById("modal-title").textContent="Error de conexión";
+  }
+}
+
+function setRow(id,est,sub){
+  document.getElementById("row-"+id).className="srow "+est;
+  const dot=document.getElementById("dot-"+id);
+  dot.className="sdot "+(est==="ok"?"sdot-ok":est==="err"?"sdot-err":"sdot-spin");
+  document.getElementById("sub-"+id).textContent=sub;
+}
+
+// Recibo impresión
+function imprimirRecibo(){
+  const c=getCliente(); const{lineas,total}=buildLineas();
+  const fecha=new Date().toLocaleDateString("es-AR")+" "+new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});
+  let filas=lineas.map(l=>`<tr><td>${l.prod} — caja ${l.tipo} × ${l.qty}</td><td>u$${l.sub.toLocaleString("es-AR")}</td></tr>`).join("");
+  document.getElementById("recibo-print").innerHTML=`
+    <div class="rb">AGF Messenchymal</div>
+    <div class="rs">Representante en Argentina · dermacells.com.ar</div>
+    <div class="rt">Recibo de compra — Congreso · Venta #${vNum}</div>
+    <table>
+      <tr><td class="sh" colspan="2">Cliente</td></tr>
+      <tr><td>Nombre</td><td>${c.nombre} ${c.apellido}</td></tr>
+      <tr><td>CUIT / CUIL</td><td>${c.cuit}</td></tr>
+      <tr><td>Email</td><td>${c.mail||"—"}</td></tr>
+      <tr><td>Teléfono</td><td>${c.tel||"—"}</td></tr>
+      <tr><td>Localidad</td><td>${c.localidad||"—"}</td></tr>
+      <tr><td class="sh" colspan="2">Productos</td></tr>
+      ${filas}
+      <tr class="tr-tot"><td>TOTAL</td><td>u$${total.toLocaleString("es-AR")}</td></tr>
+    </table>
+    <div class="firmas">
+      <div class="firma-box">Firma y aclaración del cliente</div>
+      <div class="firma-box">Fecha de retiro / despacho</div>
+    </div>
+    <div class="pie">Venta #${vNum} · ${fecha} · AGF Messenchymal Argentina</div>`;
+  setTimeout(()=>window.print(),200);
+}
+
+function cerrar(){ document.getElementById("overlay").className="modal-overlay"; document.getElementById("btn-confirmar").disabled=false; }
+function nuevaVenta(){
+  vNum++;
+  document.getElementById("vnlbl").textContent="Ventas congreso · Venta #"+vNum;
+  document.getElementById("vnum-badge").textContent="Venta #"+vNum;
+  ["nombre","apellido","cuit","mail","tel","localidad"].forEach(id=>document.getElementById(id).value="");
+  PRODS.forEach(p=>{ estado[p]={qty:0,tipo:"simple"} });
+  renderProds(); cerrar();
+}
+</script>
+</body>
+</html>
