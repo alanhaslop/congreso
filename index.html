@@ -553,7 +553,7 @@ async function confirmar(){
 
   const payload=buildPayload();
   try{
-    await fetch(url,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+    await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
     setRow("sheet","ok","Enviado correctamente");
     setRow("mail","ok","Mail procesado por el servidor");
     document.getElementById("modal-title").textContent="Venta #"+vNum+" registrada";
