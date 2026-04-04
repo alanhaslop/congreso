@@ -215,6 +215,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;ba
       <div class="metodo-btn" onclick="selMetodo(this,'Transferencia')">🏦 Transferencia</div>
       <div class="metodo-btn" onclick="selMetodo(this,'QR')">📱 QR</div>
     </div>
+    <div id="moneda-toggle" class="moneda-toggle" style="display:none;margin-top:1rem">
+      <button class="moneda-btn on" data-moneda="USD" onclick="selMoneda('USD',this)">U$D</button>
+      <button class="moneda-btn" data-moneda="ARS" onclick="selMoneda('ARS',this)">AR$</button>
+    </div>
     <div class="tc-row" id="tc-row" style="margin-top:1rem">
       <label>Tipo de cambio:</label>
       <input type="number" id="tc-input" value="1300" min="1" oninput="calcResumen()">
@@ -422,16 +426,44 @@ function precioConDesc(precio,pct){
 function selMetodo(el,m){
   document.querySelectorAll(".metodo-btn").forEach(b=>b.classList.remove("on"));
   el.classList.add("on"); metodo=m;
-  moneda = m==="Efectivo" ? "USD" : "ARS";
-  const tcRow=document.getElementById("tc-row");
-  const lbl=document.getElementById("moneda-label");
-  if(moneda==="USD"){
-    tcRow.style.display="none";
-    lbl.textContent="Cobrando en U$D (efectivo)";
+  
+  if(m==="Efectivo"){
+    // Efectivo: USD por defecto, pero permitir cambiar
+    moneda="USD";
+    document.getElementById("tc-row").style.display="none";
+    document.getElementById("moneda-label").textContent="Efectivo: cobrando en U$D (podés cambiar a AR$ abajo)";
+    // Mostrar toggle de moneda
+    document.getElementById("moneda-toggle").style.display="flex";
   } else {
-    tcRow.style.display="flex";
-    lbl.textContent="Cobrando en AR$ · Solo efectivo cobra en U$D";
+    // Otros métodos: solo AR$
+    moneda="ARS";
+    document.getElementById("tc-row").style.display="flex";
+    document.getElementById("moneda-label").textContent="Cobrando en AR$ · Solo efectivo puede usar U$D";
+    // Ocultar toggle de moneda
+    document.getElementById("moneda-toggle").style.display="none";
   }
+  
+  // Actualizar botones de moneda
+  document.querySelectorAll(".moneda-btn").forEach(b=>b.classList.remove("on"));
+  document.querySelector(`.moneda-btn[data-moneda="${moneda}"]`).classList.add("on");
+  
+  calcResumen();
+}
+
+function selMoneda(m,el){
+  if(metodo!=="Efectivo") return; // Solo permitir cambio en efectivo
+  
+  document.querySelectorAll(".moneda-btn").forEach(b=>b.classList.remove("on"));
+  el.classList.add("on"); moneda=m;
+  
+  if(m==="USD"){
+    document.getElementById("tc-row").style.display="none";
+    document.getElementById("moneda-label").textContent="Efectivo: cobrando en U$D";
+  } else {
+    document.getElementById("tc-row").style.display="flex";
+    document.getElementById("moneda-label").textContent="Efectivo: cobrando en AR$";
+  }
+  
   calcResumen();
 }
 
@@ -521,7 +553,7 @@ async function confirmar(){
 
   const payload=buildPayload();
   try{
-    await fetch(url,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify(payload)});
+    await fetch(url,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
     setRow("sheet","ok","Enviado correctamente");
     setRow("mail","ok","Mail procesado por el servidor");
     document.getElementById("modal-title").textContent="Venta #"+vNum+" registrada";
@@ -658,9 +690,12 @@ function nuevaVenta(){
   ["nombre","apellido","cuit","mail","tel","localidad"].forEach(id=>document.getElementById(id).value="");
   document.getElementById("desc-global").value="0";
   document.querySelectorAll(".metodo-btn").forEach(b=>b.classList.remove("on"));
-  moneda="ARS"; metodo="Tarjeta";
+  moneda="ARS"; metodo="";
   document.getElementById("tc-row").style.display="flex";
-  document.getElementById("moneda-label").textContent="Cobrando en AR$ · Solo efectivo cobra en U$D";
+  document.getElementById("moneda-toggle").style.display="none";
+  document.getElementById("moneda-label").textContent="Cobrando en AR$ · Solo efectivo puede usar U$D";
+  document.querySelectorAll(".moneda-btn").forEach(b=>b.classList.remove("on"));
+  document.querySelector('.moneda-btn[data-moneda="ARS"]').classList.add("on");
   agregarCaja(); cerrar();
 }
 
