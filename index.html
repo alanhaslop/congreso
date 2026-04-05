@@ -582,18 +582,18 @@ async function confirmar(){
     
     // Usar estructura básica que Google Forms reconoce
     addField('emailAddress', payload.cliente.mail);
-    addField('entry.1000000001', payload.cliente.nombre); 
-    addField('entry.1000000002', payload.cliente.apellido);
-    addField('entry.1000000003', payload.cliente.cuit);
-    addField('entry.1000000004', payload.cliente.tel || '');
-    addField('entry.1000000005', payload.cliente.localidad || '');
-    addField('entry.1000000006', payload.metodoCobro || '');
-    addField('entry.1000000007', payload.moneda || '');
-    addField('entry.1000000008', payload.tipoCambio || '');
-    addField('entry.1000000009', JSON.stringify(payload.cajas));
-    addField('entry.1000000010', payload.totalUSD || '');
-    addField('entry.1000000011', payload.totalARS || '');
-    addField('entry.1000000012', `Venta #${payload.ventaNum} - ${payload.fecha}`);
+    addField('entry.1746389054', payload.cliente.nombre); 
+    addField('entry.63079626', payload.cliente.apellido);
+    addField('entry.810126761', payload.cliente.cuit);
+    addField('entry.899820731', payload.cliente.email || '');
+    addField('entry.1052797543', payload.cliente.tel || '');
+    addField('entry.2035561220', payload.cliente.localidad || '');
+    addField('entry.1900389577', payload.metodoCobro || '');
+    addField('entry.1278648523', payload.moneda || '');
+    addField('entry.320811745', payload.tipoCambio || '');
+    addField('entry.493553979', JSON.stringify(payload.cajas));
+    addField('entry.373935788', payload.totalUSD || '');
+    addField('entry.1010197117', payload.totalARS || '');
     
     document.body.appendChild(form);
     
