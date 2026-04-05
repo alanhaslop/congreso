@@ -560,12 +560,22 @@ async function confirmar(){
 
   const payload=buildPayload();
   try{
-    await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
-    setRow("sheet","ok","Enviado correctamente");
-    setRow("mail","ok","Mail procesado por el servidor");
-    document.getElementById("modal-title").textContent="Venta #"+vNum+" registrada";
+    const encodedData = encodeURIComponent(JSON.stringify(payload));
+    const getUrl = `${url}?data=${encodedData}`;
+    
+    const response = await fetch(getUrl, {method:"GET"});
+    const result = await response.text();
+    
+    if(result.includes("OK") || result.includes("Error") === false){
+      setRow("sheet","ok","Datos guardados correctamente");
+      setRow("mail","ok","Email enviado al cliente");
+      document.getElementById("modal-title").textContent="Venta #"+vNum+" registrada";
+    } else {
+      throw new Error("Respuesta inesperada del servidor");
+    }
   }catch(err){
-    setRow("sheet","err","Sin conexión");
+    console.error("Error completo:", err);
+    setRow("sheet","err","Error: " + err.message);
     setRow("mail","err","Sin conexión");
     document.getElementById("modal-title").textContent="Error de conexión";
   }
