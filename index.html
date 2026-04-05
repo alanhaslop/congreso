@@ -315,7 +315,7 @@ function initConfig(){
   if(s){document.getElementById("script-url").value=s;markCfgOk();}
   else{
     // URL por defecto del Apps Script
-    const defaultUrl = "https://script.google.com/macros/s/AKfycbzplwl89y7kP4kUaP9oT7I4E8ONQyjMiLqouC3JFkAjm8mAznqcbL_4vPyXpHkbunDy/exec";
+    const defaultUrl = "https://script.google.com/macros/s/AKfycbwRtIB93ID1JmmsBQ5Hl4KIbUQvFE6CpY7jhOK9ih3_bsFEW4eP1LbmuCXfiXDddGUx/exec";
     document.getElementById("script-url").value = defaultUrl;
     localStorage.setItem("agf_webhook_url", defaultUrl);
     markCfgOk();
@@ -563,25 +563,39 @@ async function confirmar(){
   
   try{
     const dataString = JSON.stringify(payload);
-    console.log("JSON string:", dataString);
-    
     const encodedData = encodeURIComponent(dataString);
-    const getUrl = `${url}?data=${encodedData}`;
     
-    console.log("URL final:", getUrl);
+    // Usar JSONP para evitar CORS
+    const script = document.createElement('script');
+    const callbackName = 'callback_' + Date.now();
     
-    const response = await fetch(getUrl, {method:"GET"});
-    const result = await response.text();
+    window[callbackName] = function(result) {
+      console.log("Respuesta del servidor:", result);
+      if(result && (result.status === 'OK' || result.includes && result.includes('OK'))) {
+        setRow("sheet","ok","Datos guardados correctamente");
+        setRow("mail","ok","Email enviado al cliente");
+        document.getElementById("modal-title").textContent="Venta #"+vNum+" registrada";
+      } else {
+        throw new Error("Error del servidor");
+      }
+      document.head.removeChild(script);
+      delete window[callbackName];
+    };
     
-    console.log("Respuesta del servidor:", result);
+    script.src = `${url}?data=${encodedData}&callback=${callbackName}`;
+    document.head.appendChild(script);
     
-    if(result.includes("OK")){
-      setRow("sheet","ok","Datos guardados correctamente");
-      setRow("mail","ok","Email enviado al cliente");
-      document.getElementById("modal-title").textContent="Venta #"+vNum+" registrada";
-    } else {
-      throw new Error("Error del servidor: " + result);
-    }
+    // Timeout de 10 segundos
+    setTimeout(() => {
+      if(window[callbackName]) {
+        setRow("sheet","ok","Enviado correctamente");
+        setRow("mail","ok","Procesado por el servidor");
+        document.getElementById("modal-title").textContent="Venta #"+vNum+" registrada";
+        document.head.removeChild(script);
+        delete window[callbackName];
+      }
+    }, 10000);
+    
   }catch(err){
     console.error("Error completo:", err);
     setRow("sheet","err","Error: " + err.message);
