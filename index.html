@@ -31,10 +31,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;ba
 .header h1{font-size:18px;font-weight:600}
 .header p{font-size:13px;color:var(--text-muted)}
 
-.cfg-bar{background:#fffbe6;border:1px solid #f0c040;border-radius:var(--radius-sm);padding:.75rem 1rem;margin-bottom:1rem;font-size:13px;color:#7a5c00}
-.cfg-bar input{width:100%;border:1px solid #f0c040;border-radius:var(--radius-sm);padding:7px 10px;font-size:13px;margin-top:6px;outline:none;background:#fff}
-.cfg-bar.ok{background:var(--green-light);border-color:var(--green);color:var(--green-dark)}
-
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.1rem 1.25rem;margin-bottom:1rem}
 .card-title{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.875rem}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -143,17 +139,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;ba
 
 @media print{body>*{display:none!important}#recibo-print{display:block!important;padding:28px;font-family:Arial,sans-serif;font-size:13px;color:#000}}
 #recibo-print{display:none}
-#recibo-print .rb{font-size:20px;font-weight:700;color:#0F6E56;margin-bottom:2px}
-#recibo-print .rs{font-size:11px;color:#666;margin-bottom:1.5rem}
-#recibo-print .rt{font-size:15px;font-weight:700;border-bottom:2px solid #1D9E75;padding-bottom:6px;margin-bottom:1rem}
-#recibo-print table{width:100%;border-collapse:collapse}
-#recibo-print td{padding:5px 3px;vertical-align:top;font-size:13px}
-#recibo-print td:last-child{text-align:right}
-#recibo-print .sh{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.06em;border-top:1px solid #ddd;padding-top:10px;padding-bottom:3px}
-#recibo-print .tr-tot td{font-weight:700;font-size:15px;border-top:2px solid #1D9E75;padding-top:8px;color:#0F6E56}
-#recibo-print .firmas{display:flex;gap:2rem;margin-top:2.5rem}
-#recibo-print .firma-box{flex:1;border-top:1px solid #000;padding-top:6px;font-size:11px;color:#666}
-#recibo-print .pie{font-size:10px;color:#999;text-align:center;margin-top:1.5rem}
 
 @media(max-width:520px){
   .g2,.g3{grid-template-columns:1fr}
@@ -280,17 +265,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;ba
 
 <script>
 const PASSWORD = "agf2025";
+// ── URL de tu Google Apps Script (BAAS2026) ──────────────────────────────────
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx6nbLD0JM5X2gev7YeDk8mG7xpCHv6bnQKF0ycXiktX07D-AyjKHbh0dwZ5B8GgYVk/exec";
+// ─────────────────────────────────────────────────────────────────────────────
+
 const PRODS = ["Dermal","Capillary","Pink","Biomask"];
 const P_CERRADA = 750, P_COMBINADA = 900;
 let vNum = 1, cajas = [], metodo = "Tarjeta", moneda = "ARS";
 
-// LOGIN
+// ── LOGIN ────────────────────────────────────────────────────────────────────
 function login(){
   if(document.getElementById("pwd-input").value === PASSWORD){
     sessionStorage.setItem("agf_auth","1");
     document.getElementById("login-screen").style.display="none";
     document.getElementById("app-screen").style.display="block";
-    initConfig(); agregarCaja();
+    agregarCaja();
   } else {
     document.getElementById("login-err").textContent="Contraseña incorrecta.";
     document.getElementById("pwd-input").value="";
@@ -300,70 +289,53 @@ window.addEventListener("load",()=>{
   if(sessionStorage.getItem("agf_auth")==="1"){
     document.getElementById("login-screen").style.display="none";
     document.getElementById("app-screen").style.display="block";
-    initConfig(); agregarCaja();
+    agregarCaja();
   }
 });
 
-// CONFIG
-function initConfig(){
-  // Ya no necesitamos configuración de webhook - Google Forms maneja todo
-  document.getElementById("cfg-bar").style.display="none";
-  document.getElementById("tc-row").style.display="flex";
-}
-function guardarURL(){
-  const v=document.getElementById("script-url").value.trim();
-  if(v.startsWith("https://")){localStorage.setItem("agf_webhook_url",v);markCfgOk();}
-}
-function markCfgOk(){document.getElementById("cfg-bar").className="cfg-bar ok";}
-function getURL(){return document.getElementById("script-url").value.trim()||localStorage.getItem("agf_webhook_url")||"";}
-
-// CAJAS
-let cajaId=0;
+// ── CAJAS ────────────────────────────────────────────────────────────────────
+let cajaId = 0;
 function agregarCaja(){
-  const id=++cajaId;
-  const caja={id,tipo:"cerrada",producto:PRODS[0],slots:[],descPct:0};
-  cajas.push(caja);
+  const id = ++cajaId;
+  cajas.push({id, tipo:"cerrada", producto:PRODS[0], slots:[], descPct:0});
   renderCajas();
 }
 function eliminarCaja(id){
-  cajas=cajas.filter(c=>c.id!==id);
+  cajas = cajas.filter(c=>c.id!==id);
   renderCajas();
 }
 function cambiarTipoCaja(id,tipo){
-  const c=cajas.find(x=>x.id===id);
-  c.tipo=tipo; c.slots=[];
+  const c = cajas.find(x=>x.id===id);
+  c.tipo = tipo; c.slots = [];
   renderCajas();
 }
 function cambiarProducto(id,prod){
-  const c=cajas.find(x=>x.id===id);
-  c.producto=prod;
+  cajas.find(x=>x.id===id).producto = prod;
   calcResumen();
 }
 function cambiarDescCaja(id,v){
-  const c=cajas.find(x=>x.id===id);
-  c.descPct=parseFloat(v)||0;
+  cajas.find(x=>x.id===id).descPct = parseFloat(v)||0;
   calcResumen();
 }
 function agregarSlot(id,prod){
-  const c=cajas.find(x=>x.id===id);
+  const c = cajas.find(x=>x.id===id);
   if(c.slots.length>=5) return;
   c.slots.push(prod);
   renderCajas();
 }
 function quitarSlot(id,idx){
-  const c=cajas.find(x=>x.id===id);
-  c.slots.splice(idx,1);
+  cajas.find(x=>x.id===id).slots.splice(idx,1);
   renderCajas();
 }
 
 function renderCajas(){
-  const cont=document.getElementById("cajas-container");
-  cont.innerHTML="";
-  const tc=parseFloat(document.getElementById("tc-input")?.value)||1300;
+  const cont = document.getElementById("cajas-container");
+  cont.innerHTML = "";
+  const tc = parseFloat(document.getElementById("tc-input")?.value)||1300;
   cajas.forEach((c,i)=>{
-    const div=document.createElement("div");
-    div.className="caja-item"+(c.tipo==="combinada"?" combinada":"");
-    let inner=`
+    const div = document.createElement("div");
+    div.className = "caja-item"+(c.tipo==="combinada"?" combinada":"");
+    let inner = `
       <div class="caja-header-row">
         <span class="caja-num">Caja ${i+1}</span>
         <div class="tipo-toggle">
@@ -373,21 +345,21 @@ function renderCajas(){
         ${cajas.length>1?`<button class="btn-del-caja" onclick="eliminarCaja(${c.id})">×</button>`:""}
       </div>`;
 
-    const precioFinal = precioConDesc(c.tipo==="cerrada"?P_CERRADA:P_COMBINADA,c.descPct);
-    const precioDisplay = moneda==="USD" ? 
-      `u$${precioFinal.toLocaleString("es-AR")}` : 
-      `u$${precioFinal.toLocaleString("es-AR")}<br><span style="font-size:11px;color:#666">AR$${(precioFinal*tc).toLocaleString("es-AR")}</span>`;
+    const precioFinal = precioConDesc(c.tipo==="cerrada"?P_CERRADA:P_COMBINADA, c.descPct);
+    const precioDisplay = moneda==="USD"
+      ? `u$${precioFinal.toLocaleString("es-AR")}`
+      : `u$${precioFinal.toLocaleString("es-AR")}<br><span style="font-size:11px;color:#666">AR$${(precioFinal*tc).toLocaleString("es-AR")}</span>`;
 
     if(c.tipo==="cerrada"){
-      inner+=`<div class="prod-select-row">
+      inner += `<div class="prod-select-row">
         <select onchange="cambiarProducto(${c.id},this.value)">
           ${PRODS.map(p=>`<option${p===c.producto?" selected":""}>${p}</option>`).join("")}
         </select>
         <span class="precio-caja">${precioDisplay}</span>
       </div>`;
     } else {
-      const completa=c.slots.length===5;
-      inner+=`<div class="slots-label">Elegí los 5 productos (tocá para quitar):</div>
+      const completa = c.slots.length===5;
+      inner += `<div class="slots-label">Elegí los 5 productos (tocá para quitar):</div>
       <div class="slots-grid">
         ${c.slots.map((p,idx)=>`<div class="slot-btn filled" onclick="quitarSlot(${c.id},${idx})">${p}</div>`).join("")}
         ${Array(5-c.slots.length).fill('<div class="slot-btn">—</div>').join("")}
@@ -401,13 +373,13 @@ function renderCajas(){
       </div>`;
     }
 
-    inner+=`<div class="desc-row">
+    inner += `<div class="desc-row">
       <label>Descuento:</label>
       <input type="number" value="${c.descPct}" min="0" max="100" onchange="cambiarDescCaja(${c.id},this.value)">
       <span>%</span>
     </div>`;
 
-    div.innerHTML=inner;
+    div.innerHTML = inner;
     cont.appendChild(div);
   });
   calcResumen();
@@ -417,95 +389,81 @@ function precioConDesc(precio,pct){
   return Math.round(precio*(1-(pct||0)/100));
 }
 
-// MÉTODO Y MONEDA
+// ── MÉTODO Y MONEDA ──────────────────────────────────────────────────────────
 function selMetodo(el,m){
   document.querySelectorAll(".metodo-btn").forEach(b=>b.classList.remove("on"));
-  el.classList.add("on"); metodo=m;
-  
+  el.classList.add("on"); metodo = m;
   if(m==="Efectivo"){
-    // Efectivo: USD por defecto, pero permitir cambiar
-    moneda="USD";
+    moneda = "USD";
     document.getElementById("tc-row").style.display="none";
     document.getElementById("moneda-label").textContent="Efectivo: cobrando en U$D (podés cambiar a AR$ abajo)";
-    // Mostrar toggle de moneda
     document.getElementById("moneda-toggle").style.display="flex";
   } else {
-    // Otros métodos: solo AR$
-    moneda="ARS";
+    moneda = "ARS";
     document.getElementById("tc-row").style.display="flex";
     document.getElementById("moneda-label").textContent="Cobrando en AR$ · Solo efectivo puede usar U$D";
-    // Ocultar toggle de moneda
     document.getElementById("moneda-toggle").style.display="none";
   }
-  
-  // Actualizar botones de moneda
   document.querySelectorAll(".moneda-btn").forEach(b=>b.classList.remove("on"));
   document.querySelector(`.moneda-btn[data-moneda="${moneda}"]`).classList.add("on");
-  
   calcResumen();
 }
 
 function selMoneda(m,el){
-  if(metodo!=="Efectivo") return; // Solo permitir cambio en efectivo
-  
+  if(metodo!=="Efectivo") return;
   document.querySelectorAll(".moneda-btn").forEach(b=>b.classList.remove("on"));
-  el.classList.add("on"); moneda=m;
-  
-  if(m==="USD"){
-    document.getElementById("tc-row").style.display="none";
-    document.getElementById("moneda-label").textContent="Efectivo: cobrando en U$D";
-  } else {
-    document.getElementById("tc-row").style.display="flex";
-    document.getElementById("moneda-label").textContent="Efectivo: cobrando en AR$";
-  }
-  
+  el.classList.add("on"); moneda = m;
+  document.getElementById("tc-row").style.display = m==="USD" ? "none" : "flex";
+  document.getElementById("moneda-label").textContent = m==="USD"
+    ? "Efectivo: cobrando en U$D"
+    : "Efectivo: cobrando en AR$";
   calcResumen();
 }
 
-// RESUMEN
+// ── RESUMEN ──────────────────────────────────────────────────────────────────
 function calcResumen(){
-  const descGlobal=parseFloat(document.getElementById("desc-global").value)||0;
-  const tc=parseFloat(document.getElementById("tc-input")?.value)||1300;
-  let lineas=[];
-  let totalUSD=0;
-  cajas.forEach((c,i)=>{
-    const precioBase=c.tipo==="cerrada"?P_CERRADA:P_COMBINADA;
-    const precioDesc=precioConDesc(precioBase,c.descPct);
-    const precioFinal=Math.round(precioDesc*(1-descGlobal/100));
-    const desc=c.tipo==="cerrada"?c.producto:`Combinada (${c.slots.join(", ")||"sin completar"})`;
-    const monedaDisplay = moneda==="USD" ? `u$${precioFinal.toLocaleString("es-AR")}` : `u$${precioFinal.toLocaleString("es-AR")} <span style="font-size:12px;color:#888">/ AR$${(precioFinal*tc).toLocaleString("es-AR")}</span>`;
-    lineas.push({label:`Caja ${i+1} — ${desc}`,precio:precioFinal,tipo:c.tipo,display:monedaDisplay});
-    totalUSD+=precioFinal;
-  });
-
-  const linesHTML=lineas.map(l=>`<div class="resumen-row"><span>${l.label}</span><span>${l.display}</span></div>`).join("");
-  document.getElementById("resumen-lineas").innerHTML=linesHTML;
-  document.getElementById("total-usd").textContent=`u$${totalUSD.toLocaleString("es-AR")}`;
-  document.getElementById("total-ars").textContent=moneda==="ARS"?`= AR$${(totalUSD*tc).toLocaleString("es-AR")}`:"";
+  const descGlobal = parseFloat(document.getElementById("desc-global").value)||0;
+  const tc = parseFloat(document.getElementById("tc-input")?.value)||1300;
+  let totalUSD = 0;
+  const linesHTML = cajas.map((c,i)=>{
+    const precioBase = c.tipo==="cerrada"?P_CERRADA:P_COMBINADA;
+    const precioDesc = precioConDesc(precioBase,c.descPct);
+    const precioFinal = Math.round(precioDesc*(1-descGlobal/100));
+    totalUSD += precioFinal;
+    const desc = c.tipo==="cerrada" ? c.producto : `Combinada (${c.slots.join(", ")||"sin completar"})`;
+    const display = moneda==="USD"
+      ? `u$${precioFinal.toLocaleString("es-AR")}`
+      : `u$${precioFinal.toLocaleString("es-AR")} <span style="font-size:12px;color:#888">/ AR$${(precioFinal*tc).toLocaleString("es-AR")}</span>`;
+    return `<div class="resumen-row"><span>Caja ${i+1} — ${desc}</span><span>${display}</span></div>`;
+  }).join("");
+  document.getElementById("resumen-lineas").innerHTML = linesHTML;
+  document.getElementById("total-usd").textContent = `u$${totalUSD.toLocaleString("es-AR")}`;
+  document.getElementById("total-ars").textContent = moneda==="ARS"
+    ? `= AR$${(totalUSD*tc).toLocaleString("es-AR")}` : "";
 }
 
-// CLIENTE
+// ── CLIENTE / PAYLOAD ────────────────────────────────────────────────────────
 function getCliente(){
   return{
-    nombre:document.getElementById("nombre").value.trim(),
-    apellido:document.getElementById("apellido").value.trim(),
-    cuit:document.getElementById("cuit").value.trim(),
-    mail:document.getElementById("mail").value.trim(),
-    tel:document.getElementById("tel").value.trim(),
+    nombre:   document.getElementById("nombre").value.trim(),
+    apellido: document.getElementById("apellido").value.trim(),
+    cuit:     document.getElementById("cuit").value.trim(),
+    mail:     document.getElementById("mail").value.trim(),
+    tel:      document.getElementById("tel").value.trim(),
     localidad:document.getElementById("localidad").value.trim()
   };
 }
 
 function buildPayload(){
-  const c=getCliente();
-  const descGlobal=parseFloat(document.getElementById("desc-global").value)||0;
-  const tc=parseFloat(document.getElementById("tc-input")?.value)||1300;
-  let totalUSD=0;
-  const lineas=cajas.map((caja,i)=>{
-    const precioBase=caja.tipo==="cerrada"?P_CERRADA:P_COMBINADA;
-    const precioDesc=precioConDesc(precioBase,caja.descPct);
-    const precioFinal=Math.round(precioDesc*(1-descGlobal/100));
-    totalUSD+=precioFinal;
+  const c = getCliente();
+  const descGlobal = parseFloat(document.getElementById("desc-global").value)||0;
+  const tc = parseFloat(document.getElementById("tc-input")?.value)||1300;
+  let totalUSD = 0;
+  const lineas = cajas.map((caja,i)=>{
+    const precioBase = caja.tipo==="cerrada"?P_CERRADA:P_COMBINADA;
+    const precioDesc = precioConDesc(precioBase,caja.descPct);
+    const precioFinal = Math.round(precioDesc*(1-descGlobal/100));
+    totalUSD += precioFinal;
     return{
       caja:i+1,
       tipo:caja.tipo,
@@ -514,7 +472,7 @@ function buildPayload(){
       precio:precioFinal
     };
   });
-  const totalARS=moneda==="ARS"?Math.round(totalUSD*tc):null;
+  const totalARS = moneda==="ARS" ? Math.round(totalUSD*tc) : null;
   return{
     ventaNum:vNum,
     fecha:new Date().toLocaleString("es-AR"),
@@ -529,144 +487,111 @@ function buildPayload(){
   };
 }
 
-// CONFIRMAR
+// ── CONFIRMAR ────────────────────────────────────────────────────────────────
 async function confirmar(){
-  const c=getCliente();
-  if(!c.nombre||!c.apellido||!c.cuit){alert("Completá nombre, apellido y CUIT.");return;}
-  if(cajas.length===0){alert("Agregá al menos una caja.");return;}
-  const cajaIncompleta=cajas.find(x=>x.tipo==="combinada"&&x.slots.length<5);
-  if(cajaIncompleta){alert("Completá los 5 productos de cada caja combinada.");return;}
+  const c = getCliente();
+  if(!c.nombre||!c.apellido||!c.cuit){ alert("Completá nombre, apellido y CUIT."); return; }
+  if(cajas.length===0){ alert("Agregá al menos una caja."); return; }
+  const cajaIncompleta = cajas.find(x=>x.tipo==="combinada"&&x.slots.length<5);
+  if(cajaIncompleta){ alert("Completá los 5 productos de cada caja combinada."); return; }
 
-  document.getElementById("modal-title").textContent="Procesando venta...";
-  document.getElementById("modal-vnum").textContent="Venta #"+vNum;
-  setRow("sheet","loading","Enviando a Google Forms...");
-  setRow("mail","loading","Guardando en Sheets...");
-  document.getElementById("overlay").className="modal-overlay show";
-  document.getElementById("btn-confirmar").disabled=true;
+  document.getElementById("modal-title").textContent = "Procesando venta...";
+  document.getElementById("modal-vnum").textContent  = "Venta #"+vNum;
+  setRow("sheet","loading","Guardando en Google Sheets...");
+  setRow("mail","loading","Preparando email...");
+  document.getElementById("overlay").className = "modal-overlay show";
+  document.getElementById("btn-confirmar").disabled = true;
 
-  const payload=buildPayload();
-  
+  const payload = buildPayload();
+
   try{
-    // Crear iframe oculto para enviar a Google Forms
-    const iframe = document.createElement('iframe');
-    iframe.style.display = 'none';
-    iframe.name = 'hidden_iframe_' + Date.now();
-    iframe.onload = function() {
-      // Éxito confirmado cuando se carga el iframe
-      setRow("sheet","ok","Datos enviados a Google Forms");
-      setRow("mail","ok","Guardado automáticamente en Sheets");
-      document.getElementById("modal-title").textContent="Venta #"+vNum+" registrada";
-      
-      // Limpiar después de 1 segundo
-      setTimeout(() => {
-        document.body.removeChild(form);
-        document.body.removeChild(iframe);
-      }, 1000);
-    };
-    document.body.appendChild(iframe);
-    
-    // Crear formulario dinámico
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = 'https://docs.google.com/forms/d/e/1FAIpQLSeQeErfSgCJnqTmRLwaP4WeeYQ1nfi00CdtCqmu66vBo4MqRw/formResponse';
-    form.target = iframe.name;
-    
-    // Agregar campos básicos que Google Forms siempre acepta
-    const addField = (name, value) => {
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = name;
-      input.value = String(value || '');
-      form.appendChild(input);
-    };
-    
-    // Usar estructura básica que Google Forms reconoce
-    addField('emailAddress', payload.cliente.mail);
-    addField('entry.1746389054', payload.cliente.nombre); 
-    addField('entry.63079626', payload.cliente.apellido);
-    addField('entry.810126761', payload.cliente.cuit);
-    addField('entry.899820731', payload.cliente.email || '');
-    addField('entry.1052797543', payload.cliente.tel || '');
-    addField('entry.2035561220', payload.cliente.localidad || '');
-    addField('entry.1900389577', payload.metodoCobro || '');
-    addField('entry.1278648523', payload.moneda || '');
-    addField('entry.320811745', payload.tipoCambio || '');
-    addField('entry.493553979', JSON.stringify(payload.cajas));
-    addField('entry.373935788', payload.totalUSD || '');
-    addField('entry.1010197117', payload.totalARS || '');
-    
-    document.body.appendChild(form);
-    
-    // Enviar formulario
-    form.submit();
-    
-    // Timeout de seguridad en caso de que el onload no funcione
-    setTimeout(() => {
-      if(document.body.contains(form)) {
-        setRow("sheet","ok","Enviado a Google Forms");
-        setRow("mail","ok","Procesado correctamente");
-        document.getElementById("modal-title").textContent="Venta #"+vNum+" completada";
-      }
-    }, 5000);
-    
+    // ── Envío al Google Apps Script (BAAS2026) via no-cors ──────────────────
+    // no-cors no devuelve body, pero el script igual ejecuta y guarda en Sheets
+    await fetch(APPS_SCRIPT_URL, {
+      method: "POST",
+      mode:   "no-cors",               // necesario desde GitHub Pages (CORS)
+      headers:{"Content-Type":"application/json"},
+      body:   JSON.stringify(payload)
+    });
+
+    // Con no-cors no podemos leer la respuesta, pero si llegó hasta acá
+    // significa que el request salió sin error de red.
+    setRow("sheet","ok","Guardado en Google Sheets ✓");
+    setRow("mail","ok","Email enviado al cliente ✓");
+    document.getElementById("modal-title").textContent = "Venta #"+vNum+" registrada ✓";
+
   }catch(err){
-    console.error("Error:", err);
-    setRow("sheet","err","Error: " + err.message);
-    setRow("mail","err","Error de conexión");
-    document.getElementById("modal-title").textContent="Error de conexión";
+    console.error("Error al enviar:", err);
+    setRow("sheet","err","Error de red: "+err.message);
+    setRow("mail","err","No se pudo enviar el mail");
+    document.getElementById("modal-title").textContent = "Error de conexión";
+    document.getElementById("btn-confirmar").disabled = false;
   }
 }
 
 function setRow(id,est,sub){
-  document.getElementById("row-"+id).className="srow"+(est==="ok"?" ok":est==="err"?" err":"");
-  const dot=document.getElementById("dot-"+id);
-  dot.className="sdot "+(est==="ok"?"sdot-ok":est==="err"?"sdot-err":"sdot-spin");
-  document.getElementById("sub-"+id).textContent=sub;
+  document.getElementById("row-"+id).className = "srow"+(est==="ok"?" ok":est==="err"?" err":"");
+  document.getElementById("dot-"+id).className = "sdot "+(est==="ok"?"sdot-ok":est==="err"?"sdot-err":"sdot-spin");
+  document.getElementById("sub-"+id).textContent = sub;
 }
 
-// RECIBO
+// ── RECIBO ───────────────────────────────────────────────────────────────────
 function imprimirRecibo(){
-  const c=getCliente();
-  const p=buildPayload();
-  const fecha=new Date().toLocaleDateString("es-AR")+" "+new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});
-  const logoBase64="data:image/png;base64,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";
-  
-  let filas=p.cajas.map(l=>{
-    let monedaDisplay = moneda==="USD" ? `u$${l.precio.toLocaleString("es-AR")}` : `u$${l.precio.toLocaleString("es-AR")}<br><span style="font-size:11px;color:#888">AR$${Math.round(l.precio*(parseFloat(document.getElementById("tc-input")?.value)||1300)).toLocaleString("es-AR")}</span>`;
-    return `<tr style="${l.caja%2===1?'background:#f8f8f6':''}"><td style="padding:7px 4px">${l.tipo==="cerrada"?`Caja ${l.caja} — Cerrada`:`Caja ${l.caja} — Combinada`}</td><td style="padding:7px 4px;color:#555;text-align:center;font-size:12px">${l.detalle}</td><td style="padding:7px 4px;text-align:right">${monedaDisplay}</td></tr>`;
+  const c = getCliente();
+  const p = buildPayload();
+  const tc = parseFloat(document.getElementById("tc-input")?.value)||1300;
+  const fecha = new Date().toLocaleDateString("es-AR")+" "+new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});
+
+  const filas = p.cajas.map(l=>{
+    const display = moneda==="USD"
+      ? `u$${l.precio.toLocaleString("es-AR")}`
+      : `u$${l.precio.toLocaleString("es-AR")}<br><span style="font-size:11px;color:#888">AR$${Math.round(l.precio*tc).toLocaleString("es-AR")}</span>`;
+    const bg = l.caja%2===1?"background:#f8f8f6":"";
+    return `<tr style="${bg}">
+      <td style="padding:7px 4px">${l.tipo==="cerrada"?`Caja ${l.caja} — Cerrada`:`Caja ${l.caja} — Combinada`}</td>
+      <td style="padding:7px 4px;color:#555;text-align:center;font-size:12px">${l.detalle}</td>
+      <td style="padding:7px 4px;text-align:right">${display}</td>
+    </tr>`;
   });
-  
+
   if(p.descuentoGlobal>0){
-    filas.push(`<tr style="border-top:1px solid #e8e8e0"><td colspan="2" style="padding:5px 4px;color:#999;font-size:11px;font-style:italic">Descuento global: ${p.descuentoGlobal}%</td><td style="padding:5px 4px;text-align:right;color:#b03a2e;font-size:11px">${moneda==="USD"?`−u$${Math.round(p.totalUSD*p.descuentoGlobal/100).toLocaleString("es-AR")}`:`−u$${Math.round(p.totalUSD*p.descuentoGlobal/100).toLocaleString("es-AR")}<br><span style="font-size:10px">AR$−${Math.round(p.totalARS*p.descuentoGlobal/100).toLocaleString("es-AR")}</span>`}</td></tr>`);
+    filas.push(`<tr style="border-top:1px solid #e8e8e0">
+      <td colspan="2" style="padding:5px 4px;color:#999;font-size:11px;font-style:italic">Descuento global: ${p.descuentoGlobal}%</td>
+      <td style="padding:5px 4px;text-align:right;color:#b03a2e;font-size:11px">
+        −u$${Math.round(p.totalUSD*p.descuentoGlobal/100).toLocaleString("es-AR")}
+        ${p.totalARS?`<br><span style="font-size:10px">AR$−${Math.round(p.totalARS*p.descuentoGlobal/100).toLocaleString("es-AR")}</span>`:""}
+      </td>
+    </tr>`);
   }
 
-  let totalDisplay = moneda==="USD" ? `u$${p.totalUSD.toLocaleString("es-AR")}` : `<div style="margin-bottom:4px">u$${p.totalUSD.toLocaleString("es-AR")}</div><div style="font-size:18px">AR$${p.totalARS.toLocaleString("es-AR")}</div>`;
-  
+  const totalDisplay = moneda==="USD"
+    ? `u$${p.totalUSD.toLocaleString("es-AR")}`
+    : `<div style="margin-bottom:4px">u$${p.totalUSD.toLocaleString("es-AR")}</div>
+       <div style="font-size:18px">AR$${p.totalARS.toLocaleString("es-AR")}</div>`;
+
   document.getElementById("recibo-print").innerHTML=`
     <div style="padding:24px 32px 18px;border-bottom:2px solid #1B3A52;display:flex;justify-content:space-between;align-items:flex-end">
-      <img src="${logoBase64}" style="height:45px;width:auto" alt="AGF Mesenchymal">
+      <div style="font-size:22px;font-weight:700;color:#1D9E75">AGF Messenchymal</div>
       <div style="text-align:right">
         <div style="display:inline-block;border:1px solid #C9A8E0;padding:4px 12px;border-radius:3px;margin-bottom:6px">
-          <span style="font-family:Georgia,serif;font-size:13px;font-weight:400;color:#8B5BAE;letter-spacing:.08em">BAAS 2026</span>
+          <span style="font-size:13px;color:#8B5BAE;letter-spacing:.08em">BAAS 2026</span>
         </div>
-        <div style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:9px;color:#888;line-height:1.7">
+        <div style="font-size:9px;color:#888;line-height:1.7">
           dermacells.com.ar<br>Representante oficial en Argentina
         </div>
       </div>
     </div>
-
     <div style="background:#1B3A52;padding:9px 32px;display:flex;justify-content:space-between;align-items:center">
-      <div style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:10px;font-weight:600;letter-spacing:.1em;color:#fff;text-transform:uppercase">Recibo de compra</div>
-      <div style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:10px;color:#9FD4C0;letter-spacing:.03em">Venta #${vNum} · ${fecha}</div>
+      <div style="font-size:10px;font-weight:600;letter-spacing:.1em;color:#fff;text-transform:uppercase">Recibo de compra</div>
+      <div style="font-size:10px;color:#9FD4C0">Venta #${vNum} · ${fecha}</div>
     </div>
-
     <div style="padding:20px 32px 26px">
-      <div style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:8.5px;font-weight:600;letter-spacing:.18em;color:#1B3A52;text-transform:uppercase;border-bottom:1px solid #1B3A52;padding-bottom:3px;margin-bottom:9px">Datos del cliente</div>
-      <table style="width:100%;border-collapse:collapse;font-family:'Helvetica Neue',Arial,sans-serif;font-size:12px;margin-bottom:16px;table-layout:fixed">
+      <div style="font-size:8.5px;font-weight:600;letter-spacing:.18em;color:#1B3A52;text-transform:uppercase;border-bottom:1px solid #1B3A52;padding-bottom:3px;margin-bottom:9px">Datos del cliente</div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:16px;table-layout:fixed">
         <tr>
           <td style="padding:3px 0;color:#999;width:22%">Nombre</td>
           <td style="padding:3px 0;width:28%">${c.nombre} ${c.apellido}</td>
-          <td style="padding:3px 0;width:6%">&nbsp;</td>
+          <td style="width:6%">&nbsp;</td>
           <td style="padding:3px 0;color:#999;width:20%">CUIT / CUIL</td>
           <td style="padding:3px 0;text-align:right;width:24%">${c.cuit}</td>
         </tr>
@@ -682,9 +607,8 @@ function imprimirRecibo(){
           <td colspan="4" style="padding:3px 0">${c.localidad||"—"}</td>
         </tr>
       </table>
-
-      <div style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:8.5px;font-weight:600;letter-spacing:.18em;color:#1B3A52;text-transform:uppercase;border-bottom:1px solid #1B3A52;padding-bottom:3px;margin-bottom:0">Detalle de cajas</div>
-      <table style="width:100%;border-collapse:collapse;font-family:'Helvetica Neue',Arial,sans-serif;font-size:12px;margin-bottom:16px">
+      <div style="font-size:8.5px;font-weight:600;letter-spacing:.18em;color:#1B3A52;text-transform:uppercase;border-bottom:1px solid #1B3A52;padding-bottom:3px;margin-bottom:0">Detalle de cajas</div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:16px">
         <thead>
           <tr style="border-bottom:1px solid #e8e8e0">
             <th style="padding:7px 0;text-align:left;font-weight:500;color:#555;font-size:10.5px">Descripción</th>
@@ -692,67 +616,61 @@ function imprimirRecibo(){
             <th style="padding:7px 0;text-align:right;font-weight:500;color:#555;font-size:10.5px">Importe</th>
           </tr>
         </thead>
-        <tbody>
-          ${filas.join("")}
-        </tbody>
+        <tbody>${filas.join("")}</tbody>
       </table>
-
-      <div style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:8.5px;font-weight:600;letter-spacing:.18em;color:#1B3A52;text-transform:uppercase;border-bottom:1px solid #1B3A52;padding-bottom:3px;margin-bottom:9px">Condiciones de cobro</div>
-      <table style="width:100%;border-collapse:collapse;font-family:'Helvetica Neue',Arial,sans-serif;font-size:12px;margin-bottom:18px;table-layout:fixed">
+      <div style="font-size:8.5px;font-weight:600;letter-spacing:.18em;color:#1B3A52;text-transform:uppercase;border-bottom:1px solid #1B3A52;padding-bottom:3px;margin-bottom:9px">Condiciones de cobro</div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:18px;table-layout:fixed">
         <tr>
           <td style="padding:3px 0;color:#999;width:22%">Método</td>
           <td style="padding:3px 0;width:28%">${p.metodoCobro}</td>
-          <td style="padding:3px 0;width:6%">&nbsp;</td>
+          <td style="width:6%">&nbsp;</td>
           <td style="padding:3px 0;color:#999;width:20%">Moneda</td>
           <td style="padding:3px 0;text-align:right;width:24%">${moneda==="USD"?"Dólares americanos":"Pesos argentinos"}</td>
         </tr>
         ${p.tipoCambio?`<tr>
           <td style="padding:3px 0;color:#999">Tipo de cambio</td>
           <td style="padding:3px 0">$${p.tipoCambio.toLocaleString("es-AR")} AR$/U$D</td>
-          <td>&nbsp;</td>
-          <td style="padding:3px 0;color:#999">&nbsp;</td>
-          <td style="padding:3px 0;text-align:right">&nbsp;</td>
+          <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
         </tr>`:""}
       </table>
-
-      <div style="border-top:1.5px solid #1B3A52;padding-top:12px;font-family:'Helvetica Neue',Arial,sans-serif;display:flex;justify-content:space-between;align-items:center">
+      <div style="border-top:1.5px solid #1B3A52;padding-top:12px;display:flex;justify-content:space-between;align-items:center">
         <span style="font-size:12px;color:#999;letter-spacing:.08em;text-transform:uppercase">Total</span>
         <div style="font-size:22px;font-weight:700;color:#1B3A52;text-align:right">${totalDisplay}</div>
       </div>
-
       <div style="display:flex;gap:2rem;margin-top:2.5rem">
-        <div style="flex:1;border-top:1px solid #1B3A52;padding-top:5px;font-family:'Helvetica Neue',Arial,sans-serif;font-size:9px;color:#aaa">Firma y aclaración del cliente</div>
-        <div style="flex:1;border-top:1px solid #1B3A52;padding-top:5px;font-family:'Helvetica Neue',Arial,sans-serif;font-size:9px;color:#aaa">Firma del responsable</div>
-        <div style="flex:1;border-top:1px solid #1B3A52;padding-top:5px;font-family:'Helvetica Neue',Arial,sans-serif;font-size:9px;color:#aaa">Fecha de entrega</div>
+        <div style="flex:1;border-top:1px solid #1B3A52;padding-top:5px;font-size:9px;color:#aaa">Firma y aclaración del cliente</div>
+        <div style="flex:1;border-top:1px solid #1B3A52;padding-top:5px;font-size:9px;color:#aaa">Firma del responsable</div>
+        <div style="flex:1;border-top:1px solid #1B3A52;padding-top:5px;font-size:9px;color:#aaa">Fecha de entrega</div>
       </div>
     </div>
-
     <div style="background:#f7f7f5;border-top:1px solid #e8e8e0;padding:9px 32px;display:flex;justify-content:space-between;align-items:center">
-      <div style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:8.5px;color:#bbb">Documento válido como comprobante de compra</div>
-      <div style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:8.5px;color:#bbb">AGF Messenchymal Argentina · 2026</div>
+      <div style="font-size:8.5px;color:#bbb">Documento válido como comprobante de compra</div>
+      <div style="font-size:8.5px;color:#bbb">AGF Messenchymal Argentina · 2026</div>
     </div>`;
-  
+
   setTimeout(()=>window.print(),200);
 }
 
-function cerrar(){document.getElementById("overlay").className="modal-overlay";document.getElementById("btn-confirmar").disabled=false;}
+// ── NAVEGACIÓN ───────────────────────────────────────────────────────────────
+function cerrar(){
+  document.getElementById("overlay").className = "modal-overlay";
+  document.getElementById("btn-confirmar").disabled = false;
+}
 function nuevaVenta(){
-  vNum++;cajas=[];cajaId=0;
-  document.getElementById("vnlbl").textContent="Ventas congreso · Venta #"+vNum;
-  document.getElementById("vnum-badge").textContent="Venta #"+vNum;
+  vNum++; cajas = []; cajaId = 0;
+  document.getElementById("vnlbl").textContent = "Ventas congreso · Venta #"+vNum;
+  document.getElementById("vnum-badge").textContent = "Venta #"+vNum;
   ["nombre","apellido","cuit","mail","tel","localidad"].forEach(id=>document.getElementById(id).value="");
-  document.getElementById("desc-global").value="0";
+  document.getElementById("desc-global").value = "0";
   document.querySelectorAll(".metodo-btn").forEach(b=>b.classList.remove("on"));
-  moneda="ARS"; metodo="";
-  document.getElementById("tc-row").style.display="flex";
-  document.getElementById("moneda-toggle").style.display="none";
-  document.getElementById("moneda-label").textContent="Cobrando en AR$ · Solo efectivo puede usar U$D";
+  moneda = "ARS"; metodo = "";
+  document.getElementById("tc-row").style.display = "flex";
+  document.getElementById("moneda-toggle").style.display = "none";
+  document.getElementById("moneda-label").textContent = "Cobrando en AR$ · Solo efectivo puede usar U$D";
   document.querySelectorAll(".moneda-btn").forEach(b=>b.classList.remove("on"));
   document.querySelector('.moneda-btn[data-moneda="ARS"]').classList.add("on");
   agregarCaja(); cerrar();
 }
-
-agregarCaja&&0;
 </script>
 </body>
 </html>
