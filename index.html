@@ -313,6 +313,13 @@ window.addEventListener("load",()=>{
 function initConfig(){
   const s=localStorage.getItem("agf_webhook_url");
   if(s){document.getElementById("script-url").value=s;markCfgOk();}
+  else{
+    // URL por defecto del Apps Script
+    const defaultUrl = "https://script.google.com/macros/s/AKfycbwJScwbkDywAI2MKw6vI50NRrfexGMCoaqglHDUxQDijptmyDjRwQ3vyWidSks-Wu78/exec";
+    document.getElementById("script-url").value = defaultUrl;
+    localStorage.setItem("agf_webhook_url", defaultUrl);
+    markCfgOk();
+  }
   document.getElementById("tc-row").style.display="flex";
 }
 function guardarURL(){
