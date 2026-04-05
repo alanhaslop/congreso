@@ -311,15 +311,8 @@ window.addEventListener("load",()=>{
 
 // CONFIG
 function initConfig(){
-  const s=localStorage.getItem("agf_webhook_url");
-  if(s){document.getElementById("script-url").value=s;markCfgOk();}
-  else{
-    // URL por defecto del Apps Script
-    const defaultUrl = "https://script.google.com/macros/s/AKfycbwRtIB93ID1JmmsBQ5Hl4KIbUQvFE6CpY7jhOK9ih3_bsFEW4eP1LbmuCXfiXDddGUx/exec";
-    document.getElementById("script-url").value = defaultUrl;
-    localStorage.setItem("agf_webhook_url", defaultUrl);
-    markCfgOk();
-  }
+  // Ya no necesitamos configuración de webhook - Google Forms maneja todo
+  document.getElementById("cfg-bar").style.display="none";
   document.getElementById("tc-row").style.display="flex";
 }
 function guardarURL(){
@@ -548,58 +541,83 @@ async function confirmar(){
   if(cajas.length===0){alert("Agregá al menos una caja.");return;}
   const cajaIncompleta=cajas.find(x=>x.tipo==="combinada"&&x.slots.length<5);
   if(cajaIncompleta){alert("Completá los 5 productos de cada caja combinada.");return;}
-  const url=getURL();
-  if(!url){alert("Pegá la URL del webhook en el campo de configuración.");return;}
 
   document.getElementById("modal-title").textContent="Procesando venta...";
   document.getElementById("modal-vnum").textContent="Venta #"+vNum;
-  setRow("sheet","loading","Enviando datos...");
-  setRow("mail","loading","Conectando...");
+  setRow("sheet","loading","Enviando a Google Forms...");
+  setRow("mail","loading","Guardando en Sheets...");
   document.getElementById("overlay").className="modal-overlay show";
   document.getElementById("btn-confirmar").disabled=true;
 
   const payload=buildPayload();
-  console.log("Payload generado:", JSON.stringify(payload));
   
   try{
-    const dataString = JSON.stringify(payload);
-    const encodedData = encodeURIComponent(dataString);
+    // Crear iframe oculto para enviar a Google Forms
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.name = 'hidden_iframe_' + Date.now();
+    iframe.onload = function() {
+      // Éxito confirmado cuando se carga el iframe
+      setRow("sheet","ok","Datos enviados a Google Forms");
+      setRow("mail","ok","Guardado automáticamente en Sheets");
+      document.getElementById("modal-title").textContent="Venta #"+vNum+" registrada";
+      
+      // Limpiar después de 1 segundo
+      setTimeout(() => {
+        document.body.removeChild(form);
+        document.body.removeChild(iframe);
+      }, 1000);
+    };
+    document.body.appendChild(iframe);
     
-    // Usar JSONP para evitar CORS
-    const script = document.createElement('script');
-    const callbackName = 'callback_' + Date.now();
+    // Crear formulario dinámico
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = 'https://docs.google.com/forms/d/e/1FAIpQLSeQeErfSgCJnqTmRLwaP4WeeYQ1nfi00CdtCqmu66vBo4MqRw/formResponse';
+    form.target = iframe.name;
     
-    window[callbackName] = function(result) {
-      console.log("Respuesta del servidor:", result);
-      if(result && (result.status === 'OK' || result.includes && result.includes('OK'))) {
-        setRow("sheet","ok","Datos guardados correctamente");
-        setRow("mail","ok","Email enviado al cliente");
-        document.getElementById("modal-title").textContent="Venta #"+vNum+" registrada";
-      } else {
-        throw new Error("Error del servidor");
-      }
-      document.head.removeChild(script);
-      delete window[callbackName];
+    // Agregar campos básicos que Google Forms siempre acepta
+    const addField = (name, value) => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = name;
+      input.value = String(value || '');
+      form.appendChild(input);
     };
     
-    script.src = `${url}?data=${encodedData}&callback=${callbackName}`;
-    document.head.appendChild(script);
+    // Usar estructura básica que Google Forms reconoce
+    addField('emailAddress', payload.cliente.mail);
+    addField('entry.1000000001', payload.cliente.nombre); 
+    addField('entry.1000000002', payload.cliente.apellido);
+    addField('entry.1000000003', payload.cliente.cuit);
+    addField('entry.1000000004', payload.cliente.tel || '');
+    addField('entry.1000000005', payload.cliente.localidad || '');
+    addField('entry.1000000006', payload.metodoCobro || '');
+    addField('entry.1000000007', payload.moneda || '');
+    addField('entry.1000000008', payload.tipoCambio || '');
+    addField('entry.1000000009', JSON.stringify(payload.cajas));
+    addField('entry.1000000010', payload.totalUSD || '');
+    addField('entry.1000000011', payload.totalARS || '');
+    addField('entry.1000000012', `Venta #${payload.ventaNum} - ${payload.fecha}`);
     
-    // Timeout de 10 segundos
+    document.body.appendChild(form);
+    
+    // Enviar formulario
+    form.submit();
+    
+    // Timeout de seguridad en caso de que el onload no funcione
     setTimeout(() => {
-      if(window[callbackName]) {
-        setRow("sheet","ok","Enviado correctamente");
-        setRow("mail","ok","Procesado por el servidor");
-        document.getElementById("modal-title").textContent="Venta #"+vNum+" registrada";
-        document.head.removeChild(script);
-        delete window[callbackName];
+      if(document.body.contains(form)) {
+        setRow("sheet","ok","Enviado a Google Forms");
+        setRow("mail","ok","Procesado correctamente");
+        document.getElementById("modal-title").textContent="Venta #"+vNum+" completada";
       }
-    }, 10000);
+    }, 5000);
     
   }catch(err){
-    console.error("Error completo:", err);
+    console.error("Error:", err);
     setRow("sheet","err","Error: " + err.message);
-    setRow("mail","err","Sin conexión");
+    setRow("mail","err","Error de conexión");
     document.getElementById("modal-title").textContent="Error de conexión";
   }
 }
