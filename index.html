@@ -559,19 +559,28 @@ async function confirmar(){
   document.getElementById("btn-confirmar").disabled=true;
 
   const payload=buildPayload();
+  console.log("Payload generado:", JSON.stringify(payload));
+  
   try{
-    const encodedData = encodeURIComponent(JSON.stringify(payload));
+    const dataString = JSON.stringify(payload);
+    console.log("JSON string:", dataString);
+    
+    const encodedData = encodeURIComponent(dataString);
     const getUrl = `${url}?data=${encodedData}`;
+    
+    console.log("URL final:", getUrl);
     
     const response = await fetch(getUrl, {method:"GET"});
     const result = await response.text();
     
-    if(result.includes("OK") || result.includes("Error") === false){
+    console.log("Respuesta del servidor:", result);
+    
+    if(result.includes("OK")){
       setRow("sheet","ok","Datos guardados correctamente");
       setRow("mail","ok","Email enviado al cliente");
       document.getElementById("modal-title").textContent="Venta #"+vNum+" registrada";
     } else {
-      throw new Error("Respuesta inesperada del servidor");
+      throw new Error("Error del servidor: " + result);
     }
   }catch(err){
     console.error("Error completo:", err);
