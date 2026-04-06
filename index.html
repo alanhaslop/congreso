@@ -290,17 +290,45 @@ const P_CERRADA       = 750, P_COMBINADA = 900;
 let vNum = 1, cajas = [], metodo = "", moneda = "ARS", condFiscal = "";
 
 // LOGIN
+async function cargarTipoCambio(){
+  try{
+    const res  = await fetch("https://dolarapi.com/v1/dolares/oficial");
+    const data = await res.json();
+    // Usamos el valor de venta del dólar oficial BNA
+    if(data && data.venta){
+      const tc = Math.round(data.venta);
+      document.getElementById("tc-input").value = tc;
+      document.getElementById("tc-label-info").textContent =
+        "TC BNA oficial: $" + tc.toLocaleString("es-AR") + " (actualizado)";
+      calcResumen();
+    }
+  } catch(e){
+    // Si falla, deja el valor por defecto (1300) sin error visible
+    document.getElementById("tc-label-info").textContent =
+      "No se pudo obtener el TC automático — ajustalo manualmente";
+  }
+}
+
 function login(){
   if(document.getElementById("pwd-input").value === PASSWORD){
     sessionStorage.setItem("agf_auth","1");
     document.getElementById("login-screen").style.display="none";
     document.getElementById("app-screen").style.display="block";
     agregarCaja();
+    cargarTipoCambio(); // ← línea nueva
   } else {
     document.getElementById("login-err").textContent="Contraseña incorrecta.";
     document.getElementById("pwd-input").value="";
   }
 }
+window.addEventListener("load",()=>{
+  if(sessionStorage.getItem("agf_auth")==="1"){
+    document.getElementById("login-screen").style.display="none";
+    document.getElementById("app-screen").style.display="block";
+    agregarCaja();
+    cargarTipoCambio(); // ← línea nueva
+  }
+});
 window.addEventListener("load",()=>{
   if(sessionStorage.getItem("agf_auth")==="1"){
     document.getElementById("login-screen").style.display="none";
