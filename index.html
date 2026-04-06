@@ -287,7 +287,8 @@ const PASSWORD        = "agf2025";
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwAEQAkX973fbps_xkvwKtoYhgoHjMMxZpRRpUd0VaxA-U2OFmehVubmnmhB72flds3/exec";
 const PRODS           = ["Dermal","Capillary","Pink","Biomask"];
 const P_CERRADA       = 750, P_COMBINADA = 900;
-let vNum = 1, cajas = [], metodo = "", moneda = "ARS", condFiscal = "";
+let vNum = parseInt(localStorage.getItem("agf_vnum")||"1");
+let cajas = [], metodo = "", moneda = "ARS", condFiscal = "";
 
 // LOGIN
 async function cargarTipoCambio(){
@@ -588,7 +589,9 @@ function imprimirRecibo(){
 // NAVEGACIÓN
 function cerrar(){ document.getElementById("overlay").className="modal-overlay"; document.getElementById("btn-confirmar").disabled=false; }
 function nuevaVenta(){
-  vNum++; cajas=[]; cajaId=0; condFiscal="";
+  vNum++;
+  localStorage.setItem("agf_vnum", vNum);
+  cajas=[]; cajaId=0; condFiscal="";
   document.getElementById("vnlbl").textContent="Ventas congreso · Venta #"+vNum;
   document.getElementById("vnum-badge").textContent="Venta #"+vNum;
   ["nombre","apellido","cuit","mail","tel","localidad","razon-social","cuit-facturacion"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
