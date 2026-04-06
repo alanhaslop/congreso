@@ -40,19 +40,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;ba
 .field input:focus,.field select:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(29,158,117,.1);background:#fff}
 .span2{grid-column:span 2}
 
-/* Teléfono en 3 partes */
-.tel-group{display:flex;gap:6px}
-.tel-group input{border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 10px;font-size:15px;color:var(--text);outline:none;background:#fafaf9}
-.tel-group input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(29,158,117,.1);background:#fff}
-.tel-cod-pais{width:72px;flex-shrink:0}
-.tel-cod-area{width:90px;flex-shrink:0}
-.tel-num{flex:1}
-.tel-labels{display:flex;gap:6px;margin-bottom:4px}
-.tel-labels span{font-size:11px;color:var(--text-hint)}
-.tel-labels span:first-child{width:72px}
-.tel-labels span:nth-child(2){width:90px}
-.tel-labels span:last-child{flex:1}
-
 /* CAJAS */
 .cajas-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.875rem}
 .btn-add-caja{padding:7px 14px;background:var(--green);color:#fff;border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer}
@@ -97,17 +84,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;ba
 .tc-row label{font-size:13px;color:var(--text-muted)}
 .tc-row input{border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px;font-size:14px;width:120px;outline:none;background:#fff}
 .tc-row input:focus{border-color:var(--green)}
-.tc-badge{font-size:11px;color:var(--text-hint);margin-top:4px}
-.tc-badge.loading{color:#f0a500}
-.tc-badge.ok{color:var(--green)}
 
 /* FACTURACIÓN */
-.cond-grid{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:.875rem}
-.cond-btn{padding:8px 14px;font-size:13px;font-weight:500;border:1px solid var(--border);border-radius:20px;cursor:pointer;background:#fff;color:var(--text-muted);transition:all .12s}
+.cond-fiscal-grid{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:.875rem}
+.cond-btn{padding:8px 14px;font-size:13px;font-weight:500;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;background:#fff;color:var(--text-muted);transition:all .12s}
 .cond-btn.on{border-color:var(--green);background:var(--green-light);color:var(--green-dark);font-weight:600}
-.check-row{display:flex;align-items:center;gap:8px;padding:.625rem .875rem;background:#f5f5f3;border-radius:var(--radius-sm);border:1px solid var(--border);margin-bottom:.75rem;cursor:pointer}
-.check-row input[type=checkbox]{width:16px;height:16px;accent-color:var(--green);cursor:pointer;flex-shrink:0}
-.check-row label{font-size:13px;color:var(--text-muted);cursor:pointer}
+.mismos-datos-row{display:flex;align-items:center;gap:10px;padding:.65rem .875rem;background:#f5f5f3;border-radius:var(--radius-sm);border:1px solid var(--border);margin-bottom:.75rem}
+.mismos-datos-row input[type=checkbox]{width:16px;height:16px;accent-color:var(--green);cursor:pointer;flex-shrink:0}
+.mismos-datos-row label{font-size:13px;color:var(--text-muted);cursor:pointer}
 
 /* RESUMEN */
 .resumen-card{background:var(--surface);border:1.5px solid var(--green);border-radius:var(--radius);padding:1.1rem 1.25rem;margin-bottom:1rem}
@@ -153,7 +137,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;ba
 
 @media print{body>*{display:none!important}#recibo-print{display:block!important;padding:28px;font-family:Arial,sans-serif;font-size:13px;color:#000}}
 #recibo-print{display:none}
-
 @media(max-width:520px){
   .g2{grid-template-columns:1fr}
   .span2{grid-column:span 1}
@@ -191,21 +174,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;ba
   <div class="card">
     <div class="card-title">Datos del cliente</div>
     <div class="g2">
-      <div class="field"><label>Nombre</label><input id="nombre" placeholder="Ana" autocomplete="off"></div>
-      <div class="field"><label>Apellido</label><input id="apellido" placeholder="García" autocomplete="off"></div>
-      <div class="field"><label>CUIT / CUIL</label><input id="cuit" placeholder="20-12345678-0" maxlength="13" autocomplete="off"></div>
-      <div class="field span2">
-        <label>Teléfono</label>
-        <div class="tel-labels">
-          <span>Cód. país</span><span>Cód. área</span><span>Número</span>
-        </div>
-        <div class="tel-group">
-          <input class="tel-cod-pais" id="tel-pais" placeholder="+54" maxlength="5" autocomplete="off">
-          <input class="tel-cod-area" id="tel-area" placeholder="11" maxlength="4" autocomplete="off">
-          <input class="tel-num" id="tel-num" placeholder="12345678" maxlength="10" autocomplete="off">
-        </div>
-      </div>
-      <div class="field span2"><label>Email</label><input id="mail" type="email" placeholder="ana@mail.com" autocomplete="off"></div>
+      <div class="field"><label>Nombre</label><input id="nombre" placeholder="Ana" autocomplete="given-name"></div>
+      <div class="field"><label>Apellido</label><input id="apellido" placeholder="García" autocomplete="family-name"></div>
+      <div class="field"><label>CUIT / CUIL</label><input id="cuit" placeholder="20-12345678-0" maxlength="13" autocomplete="off" inputmode="numeric"></div>
+      <div class="field"><label>Teléfono</label><input id="tel" type="text" placeholder="+54 11 1234-5678" autocomplete="off" inputmode="tel"></div>
+      <div class="field span2"><label>Email</label><input id="mail" type="email" placeholder="ana@mail.com" autocomplete="email"></div>
       <div class="field span2"><label>Localidad</label><input id="localidad" placeholder="Ciudad, Provincia" autocomplete="off"></div>
     </div>
   </div>
@@ -228,7 +201,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;ba
       <div class="metodo-btn" onclick="selMetodo(this,'Transferencia')">🏦 Transferencia</div>
       <div class="metodo-btn" onclick="selMetodo(this,'QR')">📱 QR</div>
     </div>
-    <!-- Toggle moneda: aparece en Efectivo y Transferencia -->
     <div id="moneda-toggle" class="moneda-toggle" style="display:none;margin-top:1rem">
       <button class="moneda-btn on" data-moneda="USD" onclick="selMoneda('USD',this)">U$D</button>
       <button class="moneda-btn" data-moneda="ARS" onclick="selMoneda('ARS',this)">AR$</button>
@@ -238,28 +210,27 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;ba
       <input type="number" id="tc-input" value="1300" min="1" oninput="calcResumen()">
       <span style="font-size:13px;color:var(--text-muted)">AR$/U$D</span>
     </div>
-    <div class="tc-badge" id="tc-badge">Cargando TC Banco Nación...</div>
     <div id="moneda-label" style="margin-top:.5rem;font-size:12px;color:var(--text-muted)">Cobrando en AR$ · Efectivo y Transferencia pueden usar U$D</div>
   </div>
 
   <!-- 4. DATOS DE FACTURACIÓN -->
   <div class="card">
     <div class="card-title">Datos de facturación</div>
-    <div style="font-size:12px;color:var(--text-muted);font-weight:500;margin-bottom:.5rem">Condición fiscal</div>
-    <div class="cond-grid">
-      <button class="cond-btn on" onclick="selCond(this,'Sin factura')">Sin factura</button>
-      <button class="cond-btn" onclick="selCond(this,'Resp. Inscripto')">Resp. Inscr.</button>
-      <button class="cond-btn" onclick="selCond(this,'Monotributista')">Monotributista</button>
-      <button class="cond-btn" onclick="selCond(this,'Cons. Final')">Cons. Final</button>
+    <div style="font-size:12px;color:var(--text-muted);font-weight:500;margin-bottom:.6rem">Condición fiscal</div>
+    <div class="cond-fiscal-grid">
+      <button class="cond-btn" onclick="selCondFiscal(this,'Sin factura')">Sin factura</button>
+      <button class="cond-btn" onclick="selCondFiscal(this,'Resp. Inscripto')">Resp. Inscr.</button>
+      <button class="cond-btn" onclick="selCondFiscal(this,'Monotributista')">Monotributista</button>
+      <button class="cond-btn" onclick="selCondFiscal(this,'Cons. Final')">Cons. Final</button>
     </div>
-    <div class="check-row" onclick="toggleMismosDatos()">
-      <input type="checkbox" id="chk-mismos" checked>
-      <label for="chk-mismos">Mismos datos que los datos de contacto</label>
+    <div class="mismos-datos-row">
+      <input type="checkbox" id="mismos-datos" checked onchange="toggleDatosFacturacion()">
+      <label for="mismos-datos">Mismos datos que los datos de contacto</label>
     </div>
-    <div id="facturacion-extra" style="display:none">
+    <div id="datos-facturacion-extra" style="display:none">
       <div class="g2">
         <div class="field span2"><label>Razón social</label><input id="razon-social" placeholder="Empresa S.A." autocomplete="off"></div>
-        <div class="field span2"><label>CUIT de facturación</label><input id="cuit-fact" placeholder="30-12345678-0" maxlength="13" autocomplete="off"></div>
+        <div class="field span2"><label>CUIT de facturación</label><input id="cuit-facturacion" placeholder="30-12345678-0" maxlength="13" autocomplete="off" inputmode="numeric"></div>
       </div>
     </div>
   </div>
@@ -312,20 +283,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;ba
 </div>
 
 <script>
-const PASSWORD       = "agf2025";
+const PASSWORD        = "agf2025";
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwAEQAkX973fbps_xkvwKtoYhgoHjMMxZpRRpUd0VaxA-U2OFmehVubmnmhB72flds3/exec";
-const PRODS          = ["Dermal","Capillary","Pink","Biomask"];
-const P_CERRADA      = 750, P_COMBINADA = 900;
-let vNum = 1, cajas = [], metodo = "", moneda = "ARS", condFiscal = "Sin factura";
-let cajaId = 0;
+const PRODS           = ["Dermal","Capillary","Pink","Biomask"];
+const P_CERRADA       = 750, P_COMBINADA = 900;
+let vNum = 1, cajas = [], metodo = "", moneda = "ARS", condFiscal = "";
 
-// ── LOGIN ────────────────────────────────────────────────────────────────────
+// LOGIN
 function login(){
   if(document.getElementById("pwd-input").value === PASSWORD){
     sessionStorage.setItem("agf_auth","1");
     document.getElementById("login-screen").style.display="none";
     document.getElementById("app-screen").style.display="block";
-    init();
+    agregarCaja();
   } else {
     document.getElementById("login-err").textContent="Contraseña incorrecta.";
     document.getElementById("pwd-input").value="";
@@ -335,117 +305,50 @@ window.addEventListener("load",()=>{
   if(sessionStorage.getItem("agf_auth")==="1"){
     document.getElementById("login-screen").style.display="none";
     document.getElementById("app-screen").style.display="block";
-    init();
+    agregarCaja();
   }
 });
 
-function init(){
-  cargarTC();
-  agregarCaja();
-}
-
-// ── TIPO DE CAMBIO BANCO NACIÓN ───────────────────────────────────────────────
-async function cargarTC(){
-  const badge = document.getElementById("tc-badge");
-  badge.className = "tc-badge loading";
-  badge.textContent = "Cargando TC Banco Nación...";
-  try {
-    // API pública de exchangerate — usamos Banco Nación vendedor como referencia
-    // Usamos la API de Argentina datos (bcra) para TC oficial
-    const res = await fetch("https://api.bcra.gob.ar/estadisticas/v3.0/dasboard");
-    // Si no responde BCRA, usamos dolarapi.com como fallback
-    throw new Error("fallback");
-  } catch(e1) {
-    try {
-      const res = await fetch("https://dolarapi.com/v1/dolares/oficial");
-      const data = await res.json();
-      if(data && data.venta){
-        const tc = Math.round(data.venta);
-        document.getElementById("tc-input").value = tc;
-        badge.className = "tc-badge ok";
-        badge.textContent = `TC Banco Nación vendedor: $${tc} (actualizado hoy)`;
-        calcResumen();
-      } else {
-        throw new Error("sin dato");
-      }
-    } catch(e2) {
-      badge.className = "tc-badge";
-      badge.textContent = "No se pudo cargar el TC automático — ingresalo manualmente";
-    }
-  }
-}
-
-// ── CONDICIÓN FISCAL ──────────────────────────────────────────────────────────
-function selCond(el, val){
+// CONDICIÓN FISCAL
+function selCondFiscal(el,val){
   document.querySelectorAll(".cond-btn").forEach(b=>b.classList.remove("on"));
-  el.classList.add("on");
-  condFiscal = val;
+  el.classList.add("on"); condFiscal=val;
 }
-
-function toggleMismosDatos(){
-  const chk = document.getElementById("chk-mismos");
-  chk.checked = !chk.checked;
-  document.getElementById("facturacion-extra").style.display = chk.checked ? "none" : "block";
+function toggleDatosFacturacion(){
+  const checked=document.getElementById("mismos-datos").checked;
+  document.getElementById("datos-facturacion-extra").style.display=checked?"none":"block";
 }
-
 function getDatosFacturacion(){
-  const mismos = document.getElementById("chk-mismos").checked;
+  const mismos=document.getElementById("mismos-datos").checked;
   if(mismos){
-    return {
-      razonSocial: document.getElementById("nombre").value.trim() + " " + document.getElementById("apellido").value.trim(),
-      cuitFact: document.getElementById("cuit").value.trim(),
-      mismosDatos: true
-    };
+    const c=getCliente();
+    return{razonSocial:c.nombre+" "+c.apellido,cuitFacturacion:c.cuit,mismosContacto:true};
   }
-  return {
-    razonSocial: document.getElementById("razon-social").value.trim(),
-    cuitFact: document.getElementById("cuit-fact").value.trim(),
-    mismosDatos: false
+  return{
+    razonSocial:     document.getElementById("razon-social").value.trim(),
+    cuitFacturacion: document.getElementById("cuit-facturacion").value.trim(),
+    mismosContacto:  false
   };
 }
 
-// ── CAJAS ────────────────────────────────────────────────────────────────────
-function agregarCaja(){
-  const id = ++cajaId;
-  cajas.push({id, tipo:"cerrada", producto:PRODS[0], slots:[], descPct:0});
-  renderCajas();
-}
-function eliminarCaja(id){
-  cajas = cajas.filter(c=>c.id!==id);
-  renderCajas();
-}
-function cambiarTipoCaja(id,tipo){
-  const c = cajas.find(x=>x.id===id);
-  c.tipo = tipo; c.slots = [];
-  renderCajas();
-}
-function cambiarProducto(id,prod){
-  cajas.find(x=>x.id===id).producto = prod;
-  calcResumen();
-}
-function cambiarDescCaja(id,v){
-  cajas.find(x=>x.id===id).descPct = parseFloat(v)||0;
-  calcResumen();
-}
-function agregarSlot(id,prod){
-  const c = cajas.find(x=>x.id===id);
-  if(c.slots.length>=5) return;
-  c.slots.push(prod);
-  renderCajas();
-}
-function quitarSlot(id,idx){
-  cajas.find(x=>x.id===id).slots.splice(idx,1);
-  renderCajas();
-}
+// CAJAS
+let cajaId=0;
+function agregarCaja(){ const id=++cajaId; cajas.push({id,tipo:"cerrada",producto:PRODS[0],slots:[],descPct:0}); renderCajas(); }
+function eliminarCaja(id){ cajas=cajas.filter(c=>c.id!==id); renderCajas(); }
+function cambiarTipoCaja(id,tipo){ const c=cajas.find(x=>x.id===id); c.tipo=tipo; c.slots=[]; renderCajas(); }
+function cambiarProducto(id,prod){ cajas.find(x=>x.id===id).producto=prod; calcResumen(); }
+function cambiarDescCaja(id,v){ cajas.find(x=>x.id===id).descPct=parseFloat(v)||0; calcResumen(); }
+function agregarSlot(id,prod){ const c=cajas.find(x=>x.id===id); if(c.slots.length>=5)return; c.slots.push(prod); renderCajas(); }
+function quitarSlot(id,idx){ cajas.find(x=>x.id===id).slots.splice(idx,1); renderCajas(); }
 
 function renderCajas(){
-  const cont = document.getElementById("cajas-container");
-  cont.innerHTML = "";
-  const tc = parseFloat(document.getElementById("tc-input")?.value)||1300;
+  const cont=document.getElementById("cajas-container");
+  cont.innerHTML="";
+  const tc=parseFloat(document.getElementById("tc-input")?.value)||1300;
   cajas.forEach((c,i)=>{
-    const div = document.createElement("div");
-    div.className = "caja-item"+(c.tipo==="combinada"?" combinada":"");
-    let inner = `
+    const div=document.createElement("div");
+    div.className="caja-item"+(c.tipo==="combinada"?" combinada":"");
+    let inner=`
       <div class="caja-header-row">
         <span class="caja-num">Caja ${i+1}</span>
         <div class="tipo-toggle">
@@ -454,261 +357,166 @@ function renderCajas(){
         </div>
         ${cajas.length>1?`<button class="btn-del-caja" onclick="eliminarCaja(${c.id})">×</button>`:""}
       </div>`;
-
-    const precioFinal = precioConDesc(c.tipo==="cerrada"?P_CERRADA:P_COMBINADA, c.descPct);
-    const precioDisplay = moneda==="USD"
-      ? `u$${precioFinal.toLocaleString("es-AR")}`
-      : `u$${precioFinal.toLocaleString("es-AR")}<br><span style="font-size:11px;color:#666">AR$${(precioFinal*tc).toLocaleString("es-AR")}</span>`;
-
+    const precioFinal=precioConDesc(c.tipo==="cerrada"?P_CERRADA:P_COMBINADA,c.descPct);
+    const precioDisplay=moneda==="USD"
+      ?`u$${precioFinal.toLocaleString("es-AR")}`
+      :`u$${precioFinal.toLocaleString("es-AR")}<br><span style="font-size:11px;color:#666">AR$${(precioFinal*tc).toLocaleString("es-AR")}</span>`;
     if(c.tipo==="cerrada"){
-      inner += `<div class="prod-select-row">
+      inner+=`<div class="prod-select-row">
         <select onchange="cambiarProducto(${c.id},this.value)">
           ${PRODS.map(p=>`<option${p===c.producto?" selected":""}>${p}</option>`).join("")}
         </select>
         <span class="precio-caja">${precioDisplay}</span>
       </div>`;
     } else {
-      const completa = c.slots.length===5;
-      inner += `<div class="slots-label">Elegí los 5 productos (tocá para quitar):</div>
+      const completa=c.slots.length===5;
+      inner+=`<div class="slots-label">Elegí los 5 productos (tocá para quitar):</div>
       <div class="slots-grid">
         ${c.slots.map((p,idx)=>`<div class="slot-btn filled" onclick="quitarSlot(${c.id},${idx})">${p}</div>`).join("")}
         ${Array(5-c.slots.length).fill('<div class="slot-btn">—</div>').join("")}
       </div>
-      ${!completa?`<div class="prod-pills">
-        ${PRODS.map(p=>`<button class="prod-pill" onclick="agregarSlot(${c.id},'${p}')">${p}</button>`).join("")}
-      </div>`:""}
+      ${!completa?`<div class="prod-pills">${PRODS.map(p=>`<button class="prod-pill" onclick="agregarSlot(${c.id},'${p}')">${p}</button>`).join("")}</div>`:""}
       <div class="combo-precio-row">
         <span class="slots-count${completa?" complete":""}">${c.slots.length}/5 unidades${completa?" — completa":""}</span>
         <span class="precio-caja">${precioDisplay}</span>
       </div>`;
     }
-
-    inner += `<div class="desc-row">
+    inner+=`<div class="desc-row">
       <label>Descuento:</label>
       <input type="number" value="${c.descPct}" min="0" max="100" onchange="cambiarDescCaja(${c.id},this.value)">
       <span>%</span>
     </div>`;
-
-    div.innerHTML = inner;
-    cont.appendChild(div);
+    div.innerHTML=inner; cont.appendChild(div);
   });
   calcResumen();
 }
+function precioConDesc(precio,pct){ return Math.round(precio*(1-(pct||0)/100)); }
 
-function precioConDesc(precio,pct){
-  return Math.round(precio*(1-(pct||0)/100));
-}
-
-// ── MÉTODO Y MONEDA ───────────────────────────────────────────────────────────
+// MÉTODO Y MONEDA
 function selMetodo(el,m){
   document.querySelectorAll(".metodo-btn").forEach(b=>b.classList.remove("on"));
-  el.classList.add("on"); metodo = m;
-
-  const puedeUSD = (m === "Efectivo" || m === "Transferencia");
-
-  if(puedeUSD){
-    moneda = "USD";
-    document.getElementById("tc-row").style.display = "none";
-    document.getElementById("moneda-toggle").style.display = "flex";
-    document.getElementById("moneda-label").textContent = `${m}: cobrando en U$D (podés cambiar a AR$ abajo)`;
+  el.classList.add("on"); metodo=m;
+  if(m==="Efectivo"||m==="Transferencia"){
+    moneda="USD";
+    document.getElementById("tc-row").style.display="none";
+    document.getElementById("moneda-toggle").style.display="flex";
+    document.getElementById("moneda-label").textContent=m+": cobrando en U$D (podés cambiar a AR$ abajo)";
   } else {
-    moneda = "ARS";
-    document.getElementById("tc-row").style.display = "flex";
-    document.getElementById("moneda-toggle").style.display = "none";
-    document.getElementById("moneda-label").textContent = "Cobrando en AR$ · Efectivo y Transferencia pueden usar U$D";
+    moneda="ARS";
+    document.getElementById("tc-row").style.display="flex";
+    document.getElementById("moneda-toggle").style.display="none";
+    document.getElementById("moneda-label").textContent="Cobrando en AR$ · Efectivo y Transferencia pueden usar U$D";
   }
   document.querySelectorAll(".moneda-btn").forEach(b=>b.classList.remove("on"));
   document.querySelector(`.moneda-btn[data-moneda="${moneda}"]`).classList.add("on");
   calcResumen();
 }
-
 function selMoneda(m,el){
-  const puedeUSD = (metodo === "Efectivo" || metodo === "Transferencia");
-  if(!puedeUSD) return;
+  if(metodo!=="Efectivo"&&metodo!=="Transferencia")return;
   document.querySelectorAll(".moneda-btn").forEach(b=>b.classList.remove("on"));
-  el.classList.add("on"); moneda = m;
-  document.getElementById("tc-row").style.display = m==="USD" ? "none" : "flex";
-  document.getElementById("moneda-label").textContent = m==="USD"
-    ? `${metodo}: cobrando en U$D`
-    : `${metodo}: cobrando en AR$`;
+  el.classList.add("on"); moneda=m;
+  document.getElementById("tc-row").style.display=m==="USD"?"none":"flex";
+  document.getElementById("moneda-label").textContent=metodo+": cobrando en "+(m==="USD"?"U$D":"AR$");
   calcResumen();
 }
 
-// ── RESUMEN ───────────────────────────────────────────────────────────────────
+// RESUMEN
 function calcResumen(){
-  const descGlobal = parseFloat(document.getElementById("desc-global").value)||0;
-  const tc = parseFloat(document.getElementById("tc-input")?.value)||1300;
-  let totalUSD = 0;
-  const linesHTML = cajas.map((c,i)=>{
-    const precioBase = c.tipo==="cerrada"?P_CERRADA:P_COMBINADA;
-    const precioDesc = precioConDesc(precioBase,c.descPct);
-    const precioFinal = Math.round(precioDesc*(1-descGlobal/100));
-    totalUSD += precioFinal;
-    const desc = c.tipo==="cerrada" ? c.producto : `Combinada (${c.slots.join(", ")||"sin completar"})`;
-    const display = moneda==="USD"
-      ? `u$${precioFinal.toLocaleString("es-AR")}`
-      : `u$${precioFinal.toLocaleString("es-AR")} <span style="font-size:12px;color:#888">/ AR$${(precioFinal*tc).toLocaleString("es-AR")}</span>`;
-    return `<div class="resumen-row"><span>Caja ${i+1} — ${desc}</span><span>${display}</span></div>`;
+  const descGlobal=parseFloat(document.getElementById("desc-global").value)||0;
+  const tc=parseFloat(document.getElementById("tc-input")?.value)||1300;
+  let totalUSD=0;
+  const linesHTML=cajas.map((c,i)=>{
+    const precioBase=c.tipo==="cerrada"?P_CERRADA:P_COMBINADA;
+    const precioDesc=precioConDesc(precioBase,c.descPct);
+    const precioFinal=Math.round(precioDesc*(1-descGlobal/100));
+    totalUSD+=precioFinal;
+    const desc=c.tipo==="cerrada"?c.producto:`Combinada (${c.slots.join(", ")||"sin completar"})`;
+    const display=moneda==="USD"
+      ?`u$${precioFinal.toLocaleString("es-AR")}`
+      :`u$${precioFinal.toLocaleString("es-AR")} <span style="font-size:12px;color:#888">/ AR$${(precioFinal*tc).toLocaleString("es-AR")}</span>`;
+    return`<div class="resumen-row"><span>Caja ${i+1} — ${desc}</span><span>${display}</span></div>`;
   }).join("");
-  document.getElementById("resumen-lineas").innerHTML = linesHTML;
-  document.getElementById("total-usd").textContent = `u$${totalUSD.toLocaleString("es-AR")}`;
-  document.getElementById("total-ars").textContent = moneda==="ARS"
-    ? `= AR$${(totalUSD*tc).toLocaleString("es-AR")}` : "";
+  document.getElementById("resumen-lineas").innerHTML=linesHTML;
+  document.getElementById("total-usd").textContent=`u$${totalUSD.toLocaleString("es-AR")}`;
+  document.getElementById("total-ars").textContent=moneda==="ARS"?`= AR$${(totalUSD*tc).toLocaleString("es-AR")}` :"";
 }
 
-// ── CLIENTE / PAYLOAD ─────────────────────────────────────────────────────────
-function getTel(){
-  const pais = document.getElementById("tel-pais").value.trim();
-  const area = document.getElementById("tel-area").value.trim();
-  const num  = document.getElementById("tel-num").value.trim();
-  return [pais, area, num].filter(Boolean).join(" ");
-}
-
+// CLIENTE / PAYLOAD
 function getCliente(){
   return{
     nombre:    document.getElementById("nombre").value.trim(),
     apellido:  document.getElementById("apellido").value.trim(),
     cuit:      document.getElementById("cuit").value.trim(),
     mail:      document.getElementById("mail").value.trim(),
-    tel:       getTel(),
+    tel:       document.getElementById("tel").value.trim(),
     localidad: document.getElementById("localidad").value.trim()
   };
 }
-
 function buildPayload(){
-  const c = getCliente();
-  const fact = getDatosFacturacion();
-  const descGlobal = parseFloat(document.getElementById("desc-global").value)||0;
-  const tc = parseFloat(document.getElementById("tc-input")?.value)||1300;
-  let totalUSD = 0;
-  const lineas = cajas.map((caja,i)=>{
-    const precioBase = caja.tipo==="cerrada"?P_CERRADA:P_COMBINADA;
-    const precioDesc = precioConDesc(precioBase,caja.descPct);
-    const precioFinal = Math.round(precioDesc*(1-descGlobal/100));
-    totalUSD += precioFinal;
-    return{
-      caja:i+1,
-      tipo:caja.tipo,
-      detalle:caja.tipo==="cerrada"?caja.producto:caja.slots.join(", "),
-      descCaja:caja.descPct,
-      precio:precioFinal
-    };
+  const c=getCliente();
+  const facturacion=getDatosFacturacion();
+  const descGlobal=parseFloat(document.getElementById("desc-global").value)||0;
+  const tc=parseFloat(document.getElementById("tc-input")?.value)||1300;
+  let totalUSD=0;
+  const lineas=cajas.map((caja,i)=>{
+    const precioBase=caja.tipo==="cerrada"?P_CERRADA:P_COMBINADA;
+    const precioDesc=precioConDesc(precioBase,caja.descPct);
+    const precioFinal=Math.round(precioDesc*(1-descGlobal/100));
+    totalUSD+=precioFinal;
+    return{caja:i+1,tipo:caja.tipo,detalle:caja.tipo==="cerrada"?caja.producto:caja.slots.join(", "),descCaja:caja.descPct,precio:precioFinal};
   });
-  const totalARS = moneda==="ARS" ? Math.round(totalUSD*tc) : null;
-  return{
-    ventaNum:vNum,
-    fecha:new Date().toLocaleString("es-AR"),
-    cliente:c,
-    facturacion:{ ...fact, condFiscal },
-    cajas:lineas,
-    totalUSD,
-    totalARS,
-    moneda,
-    tipoCambio:moneda==="ARS"?tc:null,
-    metodoCobro:metodo,
-    descuentoGlobal:descGlobal
-  };
+  const totalARS=moneda==="ARS"?Math.round(totalUSD*tc):null;
+  return{ventaNum:vNum,fecha:new Date().toLocaleString("es-AR"),cliente:c,facturacion,condFiscal,cajas:lineas,totalUSD,totalARS,moneda,tipoCambio:moneda==="ARS"?tc:null,metodoCobro:metodo,descuentoGlobal:descGlobal};
 }
 
-// ── CONFIRMAR ─────────────────────────────────────────────────────────────────
+// CONFIRMAR
 async function confirmar(){
-  const c = getCliente();
-  if(!c.nombre||!c.apellido||!c.cuit){ alert("Completá nombre, apellido y CUIT."); return; }
-  if(cajas.length===0){ alert("Agregá al menos una caja."); return; }
-  const cajaIncompleta = cajas.find(x=>x.tipo==="combinada"&&x.slots.length<5);
-  if(cajaIncompleta){ alert("Completá los 5 productos de cada caja combinada."); return; }
-
-  document.getElementById("modal-title").textContent = "Procesando venta...";
-  document.getElementById("modal-vnum").textContent  = "Venta #"+vNum;
+  const c=getCliente();
+  if(!c.nombre||!c.apellido||!c.cuit){alert("Completá nombre, apellido y CUIT.");return;}
+  if(cajas.length===0){alert("Agregá al menos una caja.");return;}
+  if(cajas.find(x=>x.tipo==="combinada"&&x.slots.length<5)){alert("Completá los 5 productos de cada caja combinada.");return;}
+  if(!metodo){alert("Seleccioná un método de cobro.");return;}
+  document.getElementById("modal-title").textContent="Procesando venta...";
+  document.getElementById("modal-vnum").textContent="Venta #"+vNum;
   setRow("sheet","loading","Guardando en Google Sheets...");
   setRow("mail","loading","Preparando email...");
-  document.getElementById("overlay").className = "modal-overlay show";
-  document.getElementById("btn-confirmar").disabled = true;
-
-  const payload = buildPayload();
-
+  document.getElementById("overlay").className="modal-overlay show";
+  document.getElementById("btn-confirmar").disabled=true;
   try{
-    await fetch(APPS_SCRIPT_URL, {
-      method:"POST", mode:"no-cors",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify(payload)
-    });
+    await fetch(APPS_SCRIPT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify(buildPayload())});
     setRow("sheet","ok","Guardado en Google Sheets ✓");
     setRow("mail","ok","Email enviado al cliente ✓");
-    document.getElementById("modal-title").textContent = "Venta #"+vNum+" registrada ✓";
+    document.getElementById("modal-title").textContent="Venta #"+vNum+" registrada ✓";
   }catch(err){
-    console.error(err);
     setRow("sheet","err","Error de red: "+err.message);
     setRow("mail","err","No se pudo enviar el mail");
-    document.getElementById("modal-title").textContent = "Error de conexión";
-    document.getElementById("btn-confirmar").disabled = false;
+    document.getElementById("modal-title").textContent="Error de conexión";
+    document.getElementById("btn-confirmar").disabled=false;
   }
 }
-
 function setRow(id,est,sub){
-  document.getElementById("row-"+id).className = "srow"+(est==="ok"?" ok":est==="err"?" err":"");
-  document.getElementById("dot-"+id).className = "sdot "+(est==="ok"?"sdot-ok":est==="err"?"sdot-err":"sdot-spin");
-  document.getElementById("sub-"+id).textContent = sub;
+  document.getElementById("row-"+id).className="srow"+(est==="ok"?" ok":est==="err"?" err":"");
+  document.getElementById("dot-"+id).className="sdot "+(est==="ok"?"sdot-ok":est==="err"?"sdot-err":"sdot-spin");
+  document.getElementById("sub-"+id).textContent=sub;
 }
 
-// ── RECIBO ────────────────────────────────────────────────────────────────────
+// RECIBO
 function imprimirRecibo(){
-  const c = getCliente();
-  const p = buildPayload();
-  const tc = parseFloat(document.getElementById("tc-input")?.value)||1300;
-  const fecha = new Date().toLocaleDateString("es-AR")+" "+new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});
-
-  const filas = p.cajas.map(l=>{
-    const display = moneda==="USD"
-      ? `u$${l.precio.toLocaleString("es-AR")}`
-      : `u$${l.precio.toLocaleString("es-AR")}<br><span style="font-size:11px;color:#888">AR$${Math.round(l.precio*tc).toLocaleString("es-AR")}</span>`;
-    const bg = l.caja%2===1?"background:#f8f8f6":"";
-    return `<tr style="${bg}">
-      <td style="padding:7px 4px">${l.tipo==="cerrada"?`Caja ${l.caja} — Cerrada`:`Caja ${l.caja} — Combinada`}</td>
-      <td style="padding:7px 4px;color:#555;text-align:center;font-size:12px">${l.detalle}</td>
-      <td style="padding:7px 4px;text-align:right">${display}</td>
-    </tr>`;
+  const c=getCliente(); const p=buildPayload();
+  const tc=parseFloat(document.getElementById("tc-input")?.value)||1300;
+  const fecha=new Date().toLocaleDateString("es-AR")+" "+new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});
+  const filas=p.cajas.map(l=>{
+    const display=moneda==="USD"?`u$${l.precio.toLocaleString("es-AR")}`:`u$${l.precio.toLocaleString("es-AR")}<br><span style="font-size:11px;color:#888">AR$${Math.round(l.precio*tc).toLocaleString("es-AR")}</span>`;
+    const bg=l.caja%2===1?"background:#f8f8f6":"";
+    return`<tr style="${bg}"><td style="padding:7px 4px">${l.tipo==="cerrada"?`Caja ${l.caja} — Cerrada`:`Caja ${l.caja} — Combinada`}</td><td style="padding:7px 4px;color:#555;text-align:center;font-size:12px">${l.detalle}</td><td style="padding:7px 4px;text-align:right">${display}</td></tr>`;
   });
-
-  if(p.descuentoGlobal>0){
-    filas.push(`<tr style="border-top:1px solid #e8e8e0">
-      <td colspan="2" style="padding:5px 4px;color:#999;font-size:11px;font-style:italic">Descuento global: ${p.descuentoGlobal}%</td>
-      <td style="padding:5px 4px;text-align:right;color:#b03a2e;font-size:11px">
-        −u$${Math.round(p.totalUSD*p.descuentoGlobal/100).toLocaleString("es-AR")}
-        ${p.totalARS?`<br><span style="font-size:10px">AR$−${Math.round(p.totalARS*p.descuentoGlobal/100).toLocaleString("es-AR")}</span>`:""}
-      </td>
-    </tr>`);
-  }
-
-  const totalDisplay = moneda==="USD"
-    ? `u$${p.totalUSD.toLocaleString("es-AR")}`
-    : `<div style="margin-bottom:4px">u$${p.totalUSD.toLocaleString("es-AR")}</div>
-       <div style="font-size:18px">AR$${p.totalARS.toLocaleString("es-AR")}</div>`;
-
-  const fact = p.facturacion;
-  const factRow = fact.condFiscal !== "Sin factura" ? `
-    <tr>
-      <td style="padding:3px 0;color:#999">Condición fiscal</td>
-      <td colspan="3" style="padding:3px 0">${fact.condFiscal}</td>
-    </tr>
-    <tr>
-      <td style="padding:3px 0;color:#999">Razón social</td>
-      <td colspan="3" style="padding:3px 0">${fact.razonSocial||"—"}</td>
-    </tr>
-    <tr>
-      <td style="padding:3px 0;color:#999">CUIT fact.</td>
-      <td colspan="3" style="padding:3px 0">${fact.cuitFact||"—"}</td>
-    </tr>` : "";
-
+  if(p.descuentoGlobal>0) filas.push(`<tr style="border-top:1px solid #e8e8e0"><td colspan="2" style="padding:5px 4px;color:#999;font-size:11px;font-style:italic">Descuento global: ${p.descuentoGlobal}%</td><td style="padding:5px 4px;text-align:right;color:#b03a2e;font-size:11px">−u$${Math.round(p.totalUSD*p.descuentoGlobal/100).toLocaleString("es-AR")}${p.totalARS?`<br><span style="font-size:10px">AR$−${Math.round(p.totalARS*p.descuentoGlobal/100).toLocaleString("es-AR")}</span>`:""}</td></tr>`);
+  const totalDisplay=moneda==="USD"?`u$${p.totalUSD.toLocaleString("es-AR")}`:`<div style="margin-bottom:4px">u$${p.totalUSD.toLocaleString("es-AR")}</div><div style="font-size:18px">AR$${p.totalARS.toLocaleString("es-AR")}</div>`;
+  const facRowRecibo=p.condFiscal?`<tr><td style="padding:3px 0;color:#999">Cond. fiscal</td><td colspan="4" style="padding:3px 0">${p.condFiscal}${!p.facturacion.mismosContacto?` — ${p.facturacion.razonSocial} (${p.facturacion.cuitFacturacion})`:""}  </td></tr>`:"";
   document.getElementById("recibo-print").innerHTML=`
     <div style="padding:24px 32px 18px;border-bottom:2px solid #1B3A52;display:flex;justify-content:space-between;align-items:flex-end">
       <div style="font-size:22px;font-weight:700;color:#1D9E75">AGF Messenchymal</div>
-      <div style="text-align:right">
-        <div style="display:inline-block;border:1px solid #C9A8E0;padding:4px 12px;border-radius:3px;margin-bottom:6px">
-          <span style="font-size:13px;color:#8B5BAE;letter-spacing:.08em">BAAS 2026</span>
-        </div>
-        <div style="font-size:9px;color:#888;line-height:1.7">dermacells.com.ar<br>Representante oficial en Argentina</div>
-      </div>
+      <div style="text-align:right"><div style="display:inline-block;border:1px solid #C9A8E0;padding:4px 12px;border-radius:3px;margin-bottom:6px"><span style="font-size:13px;color:#8B5BAE;letter-spacing:.08em">BAAS 2026</span></div><div style="font-size:9px;color:#888;line-height:1.7">dermacells.com.ar<br>Representante oficial en Argentina</div></div>
     </div>
     <div style="background:#1B3A52;padding:9px 32px;display:flex;justify-content:space-between;align-items:center">
       <div style="font-size:10px;font-weight:600;letter-spacing:.1em;color:#fff;text-transform:uppercase">Recibo de compra</div>
@@ -717,49 +525,20 @@ function imprimirRecibo(){
     <div style="padding:20px 32px 26px">
       <div style="font-size:8.5px;font-weight:600;letter-spacing:.18em;color:#1B3A52;text-transform:uppercase;border-bottom:1px solid #1B3A52;padding-bottom:3px;margin-bottom:9px">Datos del cliente</div>
       <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:16px;table-layout:fixed">
-        <tr>
-          <td style="padding:3px 0;color:#999;width:22%">Nombre</td>
-          <td style="padding:3px 0;width:28%">${c.nombre} ${c.apellido}</td>
-          <td style="width:6%">&nbsp;</td>
-          <td style="padding:3px 0;color:#999;width:20%">CUIT / CUIL</td>
-          <td style="padding:3px 0;text-align:right;width:24%">${c.cuit}</td>
-        </tr>
-        <tr>
-          <td style="padding:3px 0;color:#999">Email</td>
-          <td style="padding:3px 0">${c.mail||"—"}</td>
-          <td>&nbsp;</td>
-          <td style="padding:3px 0;color:#999">Teléfono</td>
-          <td style="padding:3px 0;text-align:right">${c.tel||"—"}</td>
-        </tr>
-        <tr>
-          <td style="padding:3px 0;color:#999">Localidad</td>
-          <td colspan="4" style="padding:3px 0">${c.localidad||"—"}</td>
-        </tr>
-        ${factRow}
+        <tr><td style="padding:3px 0;color:#999;width:22%">Nombre</td><td style="padding:3px 0;width:28%">${c.nombre} ${c.apellido}</td><td style="width:6%">&nbsp;</td><td style="padding:3px 0;color:#999;width:20%">CUIT / CUIL</td><td style="padding:3px 0;text-align:right;width:24%">${c.cuit}</td></tr>
+        <tr><td style="padding:3px 0;color:#999">Email</td><td style="padding:3px 0">${c.mail||"—"}</td><td>&nbsp;</td><td style="padding:3px 0;color:#999">Teléfono</td><td style="padding:3px 0;text-align:right">${c.tel||"—"}</td></tr>
+        <tr><td style="padding:3px 0;color:#999">Localidad</td><td colspan="4" style="padding:3px 0">${c.localidad||"—"}</td></tr>
+        ${facRowRecibo}
       </table>
       <div style="font-size:8.5px;font-weight:600;letter-spacing:.18em;color:#1B3A52;text-transform:uppercase;border-bottom:1px solid #1B3A52;padding-bottom:3px;margin-bottom:0">Detalle de cajas</div>
       <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:16px">
-        <thead><tr style="border-bottom:1px solid #e8e8e0">
-          <th style="padding:7px 0;text-align:left;font-weight:500;color:#555;font-size:10.5px">Descripción</th>
-          <th style="padding:7px 0;text-align:center;font-weight:500;color:#555;font-size:10.5px">Contenido</th>
-          <th style="padding:7px 0;text-align:right;font-weight:500;color:#555;font-size:10.5px">Importe</th>
-        </tr></thead>
+        <thead><tr style="border-bottom:1px solid #e8e8e0"><th style="padding:7px 0;text-align:left;font-weight:500;color:#555;font-size:10.5px">Descripción</th><th style="padding:7px 0;text-align:center;font-weight:500;color:#555;font-size:10.5px">Contenido</th><th style="padding:7px 0;text-align:right;font-weight:500;color:#555;font-size:10.5px">Importe</th></tr></thead>
         <tbody>${filas.join("")}</tbody>
       </table>
       <div style="font-size:8.5px;font-weight:600;letter-spacing:.18em;color:#1B3A52;text-transform:uppercase;border-bottom:1px solid #1B3A52;padding-bottom:3px;margin-bottom:9px">Condiciones de cobro</div>
       <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:18px;table-layout:fixed">
-        <tr>
-          <td style="padding:3px 0;color:#999;width:22%">Método</td>
-          <td style="padding:3px 0;width:28%">${p.metodoCobro}</td>
-          <td style="width:6%">&nbsp;</td>
-          <td style="padding:3px 0;color:#999;width:20%">Moneda</td>
-          <td style="padding:3px 0;text-align:right;width:24%">${moneda==="USD"?"Dólares (U$D)":"Pesos (AR$)"}</td>
-        </tr>
-        ${p.tipoCambio?`<tr>
-          <td style="padding:3px 0;color:#999">Tipo de cambio</td>
-          <td style="padding:3px 0">$${p.tipoCambio.toLocaleString("es-AR")} AR$/U$D</td>
-          <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
-        </tr>`:""}
+        <tr><td style="padding:3px 0;color:#999;width:22%">Método</td><td style="padding:3px 0;width:28%">${p.metodoCobro}</td><td style="width:6%">&nbsp;</td><td style="padding:3px 0;color:#999;width:20%">Moneda</td><td style="padding:3px 0;text-align:right;width:24%">${moneda==="USD"?"Dólares americanos":"Pesos argentinos"}</td></tr>
+        ${p.tipoCambio?`<tr><td style="padding:3px 0;color:#999">Tipo de cambio</td><td style="padding:3px 0">$${p.tipoCambio.toLocaleString("es-AR")} AR$/U$D</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>`:""}
       </table>
       <div style="border-top:1.5px solid #1B3A52;padding-top:12px;display:flex;justify-content:space-between;align-items:center">
         <span style="font-size:12px;color:#999;letter-spacing:.08em;text-transform:uppercase">Total</span>
@@ -775,33 +554,24 @@ function imprimirRecibo(){
       <div style="font-size:8.5px;color:#bbb">Documento válido como comprobante de compra</div>
       <div style="font-size:8.5px;color:#bbb">AGF Messenchymal Argentina · 2026</div>
     </div>`;
-
   setTimeout(()=>window.print(),200);
 }
 
-// ── NAVEGACIÓN ────────────────────────────────────────────────────────────────
-function cerrar(){
-  document.getElementById("overlay").className = "modal-overlay";
-  document.getElementById("btn-confirmar").disabled = false;
-}
+// NAVEGACIÓN
+function cerrar(){ document.getElementById("overlay").className="modal-overlay"; document.getElementById("btn-confirmar").disabled=false; }
 function nuevaVenta(){
-  vNum++; cajas = []; cajaId = 0;
-  document.getElementById("vnlbl").textContent = "Ventas congreso · Venta #"+vNum;
-  document.getElementById("vnum-badge").textContent = "Venta #"+vNum;
-  ["nombre","apellido","cuit","mail","localidad","tel-pais","tel-area","tel-num","razon-social","cuit-fact"].forEach(id=>{
-    const el = document.getElementById(id);
-    if(el) el.value="";
-  });
-  document.getElementById("desc-global").value = "0";
-  document.getElementById("chk-mismos").checked = true;
-  document.getElementById("facturacion-extra").style.display = "none";
-  document.querySelectorAll(".metodo-btn").forEach(b=>b.classList.remove("on"));
-  document.querySelectorAll(".cond-btn").forEach(b=>b.classList.remove("on"));
-  document.querySelector(".cond-btn").classList.add("on");
-  condFiscal = "Sin factura"; moneda = "ARS"; metodo = "";
-  document.getElementById("tc-row").style.display = "flex";
-  document.getElementById("moneda-toggle").style.display = "none";
-  document.getElementById("moneda-label").textContent = "Cobrando en AR$ · Efectivo y Transferencia pueden usar U$D";
+  vNum++; cajas=[]; cajaId=0; condFiscal="";
+  document.getElementById("vnlbl").textContent="Ventas congreso · Venta #"+vNum;
+  document.getElementById("vnum-badge").textContent="Venta #"+vNum;
+  ["nombre","apellido","cuit","mail","tel","localidad","razon-social","cuit-facturacion"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
+  document.getElementById("desc-global").value="0";
+  document.getElementById("mismos-datos").checked=true;
+  document.getElementById("datos-facturacion-extra").style.display="none";
+  document.querySelectorAll(".metodo-btn,.cond-btn").forEach(b=>b.classList.remove("on"));
+  moneda="ARS"; metodo="";
+  document.getElementById("tc-row").style.display="flex";
+  document.getElementById("moneda-toggle").style.display="none";
+  document.getElementById("moneda-label").textContent="Cobrando en AR$ · Efectivo y Transferencia pueden usar U$D";
   document.querySelectorAll(".moneda-btn").forEach(b=>b.classList.remove("on"));
   document.querySelector('.moneda-btn[data-moneda="ARS"]').classList.add("on");
   agregarCaja(); cerrar();
