@@ -220,6 +220,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;ba
       <span style="font-size:13px;color:var(--text-muted)">AR$/U$D</span>
     </div>
     <div id="moneda-label" style="margin-top:.5rem;font-size:12px;color:var(--text-muted)">Cobrando en AR$ · Efectivo y Transferencia pueden usar U$D</div>
+    <div id="tc-label-info" style="margin-top:.25rem;font-size:11px;color:var(--text-hint)"></div>
   </div>
 
   <!-- 4. DATOS DE FACTURACIÓN -->
@@ -296,56 +297,180 @@ const PASSWORD        = "agf2025";
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwAEQAkX973fbps_xkvwKtoYhgoHjMMxZpRRpUd0VaxA-U2OFmehVubmnmhB72flds3/exec";
 const PRODS           = ["Dermal","Capillary","Pink","Biomask"];
 const P_CERRADA       = 750, P_COMBINADA = 900;
+const DEVICE_TIMEOUT_MS = 12 * 60 * 60 * 1000; // 12 horas
 let vNum = parseInt(localStorage.getItem("agf_vnum")||"1");
 let cajas = [], metodo = "", moneda = "ARS", condFiscal = "";
+let dispositivoActual = null;
 
-// LOGIN
+// ─── IndexedDB OFFLINE QUEUE ────────────────────────────────────────────────
+function abrirDB(){
+  return new Promise((res,rej)=>{
+    const req=indexedDB.open("agf_ventas",1);
+    req.onupgradeneeded=e=>e.target.result.createObjectStore("cola",{keyPath:"id",autoIncrement:true});
+    req.onsuccess=e=>res(e.target.result);
+    req.onerror=e=>rej(e.target.error);
+  });
+}
+async function encolarVenta(payload){
+  const db=await abrirDB();
+  return new Promise((res,rej)=>{
+    const tx=db.transaction("cola","readwrite");
+    tx.objectStore("cola").add({payload,ts:Date.now()});
+    tx.oncomplete=()=>res();
+    tx.onerror=e=>rej(e.target.error);
+  });
+}
+async function procesarCola(){
+  const db=await abrirDB();
+  const items=await new Promise((res,rej)=>{
+    const tx=db.transaction("cola","readonly");
+    const req=tx.objectStore("cola").getAll();
+    req.onsuccess=e=>res(e.target.result);
+    req.onerror=e=>rej(e.target.error);
+  });
+  for(const item of items){
+    try{
+      await fetch(APPS_SCRIPT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify(item.payload)});
+      await new Promise((res,rej)=>{
+        const tx=db.transaction("cola","readwrite");
+        tx.objectStore("cola").delete(item.id);
+        tx.oncomplete=()=>res();
+        tx.onerror=e=>rej(e.target.error);
+      });
+    }catch(e){ break; } // si falla, deja el resto para el próximo intento
+  }
+}
+window.addEventListener("online",()=>procesarCola());
+
+// ─── TIPO DE CAMBIO ──────────────────────────────────────────────────────────
 async function cargarTipoCambio(){
   try{
-    const res  = await fetch("https://dolarapi.com/v1/dolares/oficial");
-    const data = await res.json();
-    // Usamos el valor de venta del dólar oficial BNA
+    const res=await fetch("https://dolarapi.com/v1/dolares/oficial");
+    const data=await res.json();
     if(data && data.venta){
-      const tc = Math.round(data.venta);
-      document.getElementById("tc-input").value = tc;
-      document.getElementById("tc-label-info").textContent =
-        "TC BNA oficial: $" + tc.toLocaleString("es-AR") + " (actualizado)";
+      const tc=Math.round(data.venta);
+      document.getElementById("tc-input").value=tc;
+      document.getElementById("tc-label-info").textContent=
+        "TC BNA oficial: $"+tc.toLocaleString("es-AR")+" (actualizado)";
       calcResumen();
     }
-  } catch(e){
-    // Si falla, deja el valor por defecto (1300) sin error visible
-    document.getElementById("tc-label-info").textContent =
+  }catch(e){
+    document.getElementById("tc-label-info").textContent=
       "No se pudo obtener el TC automático — ajustalo manualmente";
   }
 }
 
-function login(){
-  if(document.getElementById("pwd-input").value === PASSWORD){
-    sessionStorage.setItem("agf_auth","1");
-    document.getElementById("login-screen").style.display="none";
-    document.getElementById("app-screen").style.display="block";
-    agregarCaja();
-    cargarTipoCambio(); // ← línea nueva
-  } else {
+// ─── DEVICE MANAGEMENT ───────────────────────────────────────────────────────
+async function consultarDispositivosActivos(){
+  const res=await fetch(APPS_SCRIPT_URL+"?action=getDevices",{mode:"no-cors"});
+  // no-cors devuelve opaque — necesitamos cors desde Apps Script; si falla tiramos
+  const data=await res.json();
+  return data; // esperamos {activos: ["A"], timeout_ms: 43200000}
+}
+
+async function registrarDispositivo(deviceId){
+  await fetch(APPS_SCRIPT_URL,{
+    method:"POST",mode:"no-cors",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({action:"deviceLogin",device:deviceId,ts:Date.now()})
+  });
+}
+
+async function liberarDispositivo(){
+  if(!dispositivoActual) return;
+  await fetch(APPS_SCRIPT_URL,{
+    method:"POST",mode:"no-cors",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({action:"deviceLogout",device:dispositivoActual,ts:Date.now()})
+  });
+  dispositivoActual=null;
+}
+
+function asignarYArrancar(deviceId){
+  dispositivoActual=deviceId;
+  sessionStorage.setItem("agf_auth","1");
+  sessionStorage.setItem("agf_device",deviceId);
+  sessionStorage.setItem("agf_device_ts",Date.now().toString());
+  registrarDispositivo(deviceId); // fire-and-forget
+  document.getElementById("login-screen").style.display="none";
+  document.getElementById("app-screen").style.display="block";
+  document.getElementById("vnlbl").textContent=
+    "Ventas congreso · Dispositivo "+deviceId+" · Venta #"+vNum;
+  agregarCaja();
+  cargarTipoCambio();
+}
+
+// Llamado cuando el usuario confirma selección manual
+function confirmDeviceManual(){
+  const sel=document.getElementById("device-select").value;
+  asignarYArrancar(sel);
+}
+
+async function login(){
+  const pwd=document.getElementById("pwd-input").value;
+  if(pwd !== PASSWORD){
     document.getElementById("login-err").textContent="Contraseña incorrecta.";
     document.getElementById("pwd-input").value="";
+    return;
+  }
+  const btn=document.getElementById("login-btn");
+  btn.disabled=true; btn.textContent="Verificando...";
+  document.getElementById("login-err").textContent="";
+
+  if(!navigator.onLine){
+    // Sin conexión → selección manual
+    btn.disabled=false; btn.textContent="Ingresar";
+    document.getElementById("device-warning").textContent=
+      "Sin conexión — elegí dispositivo manualmente";
+    document.getElementById("device-selector").style.display="block";
+    return;
+  }
+
+  try{
+    const res=await fetch(APPS_SCRIPT_URL+"?action=getDevices");
+    const data=await res.json(); // {activos: ["A",...]}
+    const activos=data.activos||[];
+    let deviceId;
+    if(!activos.includes("A"))            deviceId="A";
+    else if(!activos.includes("B"))       deviceId="B";
+    else {
+      // A y B ocupados → buscar primer número libre desde 2001
+      const nums=activos.filter(d=>parseInt(d)>=2001).map(d=>parseInt(d));
+      let n=2001; while(nums.includes(n)) n++;
+      deviceId=String(n);
+    }
+    btn.disabled=false; btn.textContent="Ingresar";
+    asignarYArrancar(deviceId);
+  }catch(e){
+    // Fetch falló → fallback a selección manual con advertencia
+    btn.disabled=false; btn.textContent="Ingresar";
+    document.getElementById("device-warning").textContent=
+      "No se pudo consultar dispositivos — elegí manualmente";
+    document.getElementById("device-selector").style.display="block";
   }
 }
+
 window.addEventListener("load",()=>{
-  if(sessionStorage.getItem("agf_auth")==="1"){
-    document.getElementById("login-screen").style.display="none";
-    document.getElementById("app-screen").style.display="block";
-    agregarCaja();
-    cargarTipoCambio(); // ← línea nueva
+  const auth=sessionStorage.getItem("agf_auth");
+  if(auth!=="1") return;
+  // Verificar timeout de 12h
+  const ts=parseInt(sessionStorage.getItem("agf_device_ts")||"0");
+  if(Date.now()-ts > DEVICE_TIMEOUT_MS){
+    liberarDispositivo();
+    sessionStorage.clear();
+    return;
   }
+  dispositivoActual=sessionStorage.getItem("agf_device")||"?";
+  document.getElementById("login-screen").style.display="none";
+  document.getElementById("app-screen").style.display="block";
+  document.getElementById("vnlbl").textContent=
+    "Ventas congreso · Dispositivo "+dispositivoActual+" · Venta #"+vNum;
+  agregarCaja();
+  cargarTipoCambio();
 });
-window.addEventListener("load",()=>{
-  if(sessionStorage.getItem("agf_auth")==="1"){
-    document.getElementById("login-screen").style.display="none";
-    document.getElementById("app-screen").style.display="block";
-    agregarCaja();
-  }
-});
+
+// Liberar dispositivo al cerrar/recargar
+window.addEventListener("beforeunload",()=>liberarDispositivo());
 
 // CONDICIÓN FISCAL
 function selCondFiscal(el,val){
@@ -520,16 +645,43 @@ async function confirmar(){
   setRow("mail","loading","Preparando email...");
   document.getElementById("overlay").className="modal-overlay show";
   document.getElementById("btn-confirmar").disabled=true;
+  const payload=buildPayload();
+
+  if(!navigator.onLine){
+    // Sin red → guardar en cola offline, nunca intentar fetch
+    try{
+      await encolarVenta(payload);
+      setRow("sheet","ok","Guardado offline — se enviará al reconectar ✓");
+      setRow("mail","ok","Email se enviará al reconectar ✓");
+      document.getElementById("modal-title").textContent="Venta #"+vNum+" guardada offline ✓";
+    }catch(err){
+      setRow("sheet","err","Error al guardar offline: "+err.message);
+      setRow("mail","err","No se pudo guardar");
+      document.getElementById("modal-title").textContent="Error al guardar offline";
+      document.getElementById("btn-confirmar").disabled=false;
+    }
+    return;
+  }
+
+  // Con red → solo fetch directo; si falla → cola offline como fallback
   try{
-    await fetch(APPS_SCRIPT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify(buildPayload())});
+    await fetch(APPS_SCRIPT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
     setRow("sheet","ok","Guardado en Google Sheets ✓");
     setRow("mail","ok","Email enviado al cliente ✓");
     document.getElementById("modal-title").textContent="Venta #"+vNum+" registrada ✓";
   }catch(err){
-    setRow("sheet","err","Error de red: "+err.message);
-    setRow("mail","err","No se pudo enviar el mail");
-    document.getElementById("modal-title").textContent="Error de conexión";
-    document.getElementById("btn-confirmar").disabled=false;
+    // Fetch falló con red disponible → encolar como fallback
+    try{
+      await encolarVenta(payload);
+      setRow("sheet","ok","Error de red — guardado offline como respaldo ✓");
+      setRow("mail","ok","Email se enviará al reconectar ✓");
+      document.getElementById("modal-title").textContent="Venta #"+vNum+" guardada (offline)";
+    }catch(qErr){
+      setRow("sheet","err","Error: "+err.message);
+      setRow("mail","err","No se pudo enviar el mail");
+      document.getElementById("modal-title").textContent="Error de conexión";
+      document.getElementById("btn-confirmar").disabled=false;
+    }
   }
 }
 function setRow(id,est,sub){
