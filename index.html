@@ -155,8 +155,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;ba
     <h1>Ventas Congreso</h1>
     <p>AGF Messenchymal Argentina<br>Acceso restringido al equipo</p>
     <input type="password" id="pwd-input" placeholder="Contraseña" onkeydown="if(event.key==='Enter')login()">
-    <button onclick="login()">Ingresar</button>
+    <button id="login-btn" onclick="login()">Ingresar</button>
     <div class="login-err" id="login-err"></div>
+    <div id="device-selector" style="display:none;margin-top:14px">
+      <div id="device-warning" style="font-size:12px;color:#e67e22;margin-bottom:8px;text-align:left"></div>
+      <select id="device-select" style="width:100%;border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;font-size:14px;background:#fafaf9;margin-bottom:8px;outline:none">
+        <option value="A">Dispositivo A</option>
+        <option value="B">Dispositivo B</option>
+        <option value="2001">Dispositivo 2001</option>
+      </select>
+      <button onclick="confirmDeviceManual()" style="width:100%;padding:11px;background:#e67e22;color:#fff;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer">Confirmar dispositivo</button>
+    </div>
   </div>
 </div>
 
